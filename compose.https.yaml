@@ -1,0 +1,25 @@
+# Production overlay. Requires Docker Compose 2.24.4+ for !reset.
+# docker compose -f compose.yaml -f compose.https.yaml up --build -d
+services:
+  app:
+    ports: !reset []
+    environment:
+      CLIENT_ORIGIN: https://${HARBORX_DOMAIN:?Set HARBORX_DOMAIN to your public DNS name}
+      COOKIE_SECURE: "true"
+  proxy:
+    image: caddy:2-alpine
+    environment:
+      HARBORX_DOMAIN: ${HARBORX_DOMAIN:?Set HARBORX_DOMAIN to your public DNS name}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - harborx_tls:/data
+      - harborx_proxy_config:/config
+    depends_on:
+      - app
+    restart: unless-stopped
+volumes:
+  harborx_tls:
+  harborx_proxy_config:
