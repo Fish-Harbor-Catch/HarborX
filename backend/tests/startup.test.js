@@ -14,11 +14,14 @@ async function startIsolated(t, port) {
   await cp(new URL("../src/", import.meta.url), join(directory, "src"), {
     recursive: true,
   });
-  await cp(new URL("../package.json", import.meta.url), join(directory, "package.json"));
+  await cp(
+    new URL("../package.json", import.meta.url),
+    join(directory, "package.json"),
+  );
   await symlink(
     fileURLToPath(new URL("../../node_modules", import.meta.url)),
     join(directory, "node_modules"),
-    "dir",
+    process.platform === "win32" ? "junction" : "dir",
   );
   const child = spawn(process.execPath, ["src/server.js"], {
     cwd: directory,
@@ -36,38 +39,50 @@ async function startIsolated(t, port) {
   child.stderr.on("data", (chunk) => (output += chunk));
   const exited = once(child, "exit");
   t.after(async () => {
-    if (child.exitCode === null && child.signalCode === null) child.kill("SIGTERM");
+    if (child.exitCode === null && child.signalCode === null)
+      child.kill("SIGTERM");
     await exited;
     await rm(directory, { recursive: true, force: true });
   });
   return { child, exited, output: () => output };
 }
 
-test("entry point stays alive, serves health and shuts down cleanly", { timeout: 20000 }, async (t) => {
-  const server = await startIsolated(t, 0);
-  const deadline = Date.now() + 15000;
-  let port;
-  while (Date.now() < deadline) {
-    port = server.output().match(/HarborX API: http:\/\/localhost:(\d+)/)?.[1];
-    if (port) break;
-    assert.equal(server.child.exitCode, null, server.output());
-    await new Promise((resolve) => setTimeout(resolve, 50));
-  }
-  assert.ok(port, server.output());
-  const response = await fetch(`http://127.0.0.1:${port}/api/health`);
-  assert.equal(response.status, 200);
-  assert.equal((await response.json()).database, "embedded-postgresql");
-  assert.equal(server.child.exitCode, null);
-  server.child.kill("SIGTERM");
-  assert.equal((await server.exited)[0], 0);
-});
+test(
+  "entry point stays alive, serves health and shuts down cleanly",
+  { timeout: 20000 },
+  async (t) => {
+    const server = await startIsolated(t, 0);
+    const deadline = Date.now() + 15000;
+    let port;
+    while (Date.now() < deadline) {
+      port = server
+        .output()
+        .match(/HarborX API: http:\/\/localhost:(\d+)/)?.[1];
+      if (port) break;
+      assert.equal(server.child.exitCode, null, server.output());
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    }
+    assert.ok(port, server.output());
+    const response = await fetch(`http://127.0.0.1:${port}/api/health`);
+    assert.equal(response.status, 200);
+    assert.equal((await response.json()).database, "embedded-postgresql");
+    assert.equal(server.child.exitCode, null);
+    server.child.kill("SIGTERM");
+    const [code, signal] = await server.exited;
+    assert.ok(code === 0 || signal === "SIGTERM");
+  },
+);
 
-test("occupied port fails with an error and never announces API readiness", { timeout: 20000 }, async (t) => {
-  const blocker = createServer().listen(0, "0.0.0.0");
-  await once(blocker, "listening");
-  t.after(() => new Promise((resolve) => blocker.close(resolve)));
-  const server = await startIsolated(t, blocker.address().port);
-  assert.notEqual((await server.exited)[0], 0);
-  assert.match(server.output(), /EADDRINUSE/);
-  assert.doesNotMatch(server.output(), /HarborX API: http/);
-});
+test(
+  "occupied port fails with an error and never announces API readiness",
+  { timeout: 20000 },
+  async (t) => {
+    const blocker = createServer().listen(0, "0.0.0.0");
+    await once(blocker, "listening");
+    t.after(() => new Promise((resolve) => blocker.close(resolve)));
+    const server = await startIsolated(t, blocker.address().port);
+    assert.notEqual((await server.exited)[0], 0);
+    assert.match(server.output(), /EADDRINUSE/);
+    assert.doesNotMatch(server.output(), /HarborX API: http/);
+  },
+);

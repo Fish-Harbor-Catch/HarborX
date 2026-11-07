@@ -15,6 +15,7 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [react(), VitePWA(pwaOptions)],
     server: {
+      host: true,
       port: 5173,
       strictPort: true,
       allowedHosts: ["terminal.local"],

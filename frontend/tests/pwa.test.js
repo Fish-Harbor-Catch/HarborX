@@ -1,6 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
+import { fileURLToPath } from "node:url";
 import sharp from "sharp";
 import { pwaOptions } from "../pwa.config.js";
 
@@ -12,11 +13,13 @@ test("manifest has stable identity, standalone scope and real correctly sized ic
   assert.equal(manifest.display, "standalone");
   assert.ok(manifest.name.includes("HarborX"));
   for (const icon of manifest.icons) {
-    const metadata = await sharp(new URL(`../public${icon.src}`, import.meta.url).pathname).metadata();
+    const filePath = fileURLToPath(new URL(`../public${icon.src}`, import.meta.url));
+    const metadata = await sharp(filePath).metadata();
     assert.equal(`${metadata.width}x${metadata.height}`, icon.sizes);
     assert.equal(metadata.format, "png");
   }
-  const apple = await sharp(new URL("../public/icons/apple-touch-icon.png", import.meta.url).pathname).metadata();
+  const applePath = fileURLToPath(new URL("../public/icons/apple-touch-icon.png", import.meta.url));
+  const apple = await sharp(applePath).metadata();
   assert.equal(apple.width, 180);
 });
 

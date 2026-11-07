@@ -47,7 +47,13 @@ import {
 import { api, money, date, initials, createId } from "./api.js";
 import { useDraftVault } from "./useDraftVault.js";
 import { DraftPanel, OfflineWorkspace } from "./DraftPanel.jsx";
-import { activeOfflineOwner, verifyDraftOwner, revokeOfflineAccess, announceAccountChange, listenAccountChanges } from "./draft-store.js";
+import {
+  activeOfflineOwner,
+  verifyDraftOwner,
+  revokeOfflineAccess,
+  announceAccountChange,
+  listenAccountChanges,
+} from "./draft-store.js";
 
 const NAV = {
   overview: ["Overview", LayoutDashboard],
@@ -476,12 +482,21 @@ export default function App() {
     [localMode, setLocalMode] = useState(false),
     [synced, setSynced] = useState(null);
   const draftStore = useDraftVault(user);
-  const pendingDrafts = draftStore.drafts.filter(draft => draft.state !== "synced");
+  const pendingDrafts = draftStore.drafts.filter(
+    (draft) => draft.state !== "synced",
+  );
   const sessionGeneration = useRef(0);
   function clearPrivateView() {
     sessionGeneration.current++;
-    setSelected(null); setCatchForm(null); setLots([]); setInvoices([]);
-    setEvents([]); setUsers([]); setBids([]); setSearch(""); setSynced(null);
+    setSelected(null);
+    setCatchForm(null);
+    setLots([]);
+    setInvoices([]);
+    setEvents([]);
+    setUsers([]);
+    setBids([]);
+    setSearch("");
+    setSynced(null);
     setPage("overview");
   }
   const toast = useCallback(
@@ -493,19 +508,33 @@ export default function App() {
     const t = setTimeout(() => setNotice(null), 6500);
     return () => clearTimeout(t);
   }, [notice]);
-  useEffect(() => listenAccountChanges(() => {
-    clearPrivateView();
-    setUser(null); setOfflineOwner(null); setLocalMode(false);
-    setSelected(null); setCatchForm(null); setLots([]); setInvoices([]);
-    setEvents([]); setUsers([]); setBids([]); setError("Account changed in another window. Sign in again.");
-  }), []);
+  useEffect(
+    () =>
+      listenAccountChanges(() => {
+        clearPrivateView();
+        setUser(null);
+        setOfflineOwner(null);
+        setLocalMode(false);
+        setSelected(null);
+        setCatchForm(null);
+        setLots([]);
+        setInvoices([]);
+        setEvents([]);
+        setUsers([]);
+        setBids([]);
+        setError("Account changed in another window. Sign in again.");
+      }),
+    [],
+  );
   useEffect(() => {
     // Keep the local workspace open on reconnect, including any unsaved form.
     // Returning to the server session is an explicit action.
     if (!online && offlineOwner && !user) setLocalMode(true);
   }, [online, offlineOwner, user]);
   useEffect(() => {
-    activeOfflineOwner().then(setOfflineOwner).catch(() => {});
+    activeOfflineOwner()
+      .then(setOfflineOwner)
+      .catch(() => {});
     api("/health")
       .then((x) => setDemo(x.demo))
       .catch(() => {});
@@ -557,7 +586,8 @@ export default function App() {
         await revokeOfflineAccess().catch(() => {});
         setUser(null);
         setOfflineOwner(null);
-        setSelected(null); setCatchForm(null);
+        setSelected(null);
+        setCatchForm(null);
         setPage("overview");
       } else setError(e.message);
     }
@@ -577,7 +607,7 @@ export default function App() {
     setBusy(true);
     try {
       const count = await draftStore.sync(
-        draft => api("/lots", { method: "POST", body: draft }),
+        (draft) => api("/lots", { method: "POST", body: draft }),
         async () => {
           const { user: current } = await api("/auth/me");
           await verifyDraftOwner(current);
@@ -591,9 +621,12 @@ export default function App() {
       if (e.status === 401) {
         clearPrivateView();
         await revokeOfflineAccess().catch(() => {});
-        setUser(null); setOfflineOwner(null);
+        setUser(null);
+        setOfflineOwner(null);
       }
-    } finally { setBusy(false); }
+    } finally {
+      setBusy(false);
+    }
   }
   async function run(fn, message) {
     setBusy(true);
@@ -649,9 +682,17 @@ export default function App() {
     </div>
   );
   if (!user && offlineOwner && (localMode || !online)) {
-    return <OfflineWorkspace owner={offlineOwner}
-      renderForm={props => <CatchForm {...props} />}
-      onReturn={() => { setLocalMode(false); setOfflineOwner(null); window.location.reload(); }} />;
+    return (
+      <OfflineWorkspace
+        owner={offlineOwner}
+        renderForm={(props) => <CatchForm {...props} />}
+        onReturn={() => {
+          setLocalMode(false);
+          setOfflineOwner(null);
+          window.location.reload();
+        }}
+      />
+    );
   }
   if (!user)
     return (
@@ -664,7 +705,9 @@ export default function App() {
         )}
         <Auth
           onLogin={async (u) => {
-            await verifyDraftOwner(u).catch(() => toast("Signed in. Local storage is unavailable.", "error"));
+            await verifyDraftOwner(u).catch(() =>
+              toast("Signed in. Local storage is unavailable.", "error"),
+            );
             announceAccountChange();
             clearPrivateView();
             setUser(u);
@@ -673,7 +716,16 @@ export default function App() {
           toast={toast}
           demo={demo}
         />
-        {offlineOwner && <div className="local-entry"><button className="btn secondary" onClick={() => setLocalMode(true)}>Open saved local drafts</button></div>}
+        {offlineOwner && (
+          <div className="local-entry">
+            <button
+              className="btn secondary"
+              onClick={() => setLocalMode(true)}
+            >
+              Open saved local drafts
+            </button>
+          </div>
+        )}
         {toastEl}
       </>
     );
@@ -792,7 +844,10 @@ export default function App() {
         className={`sidebar-scrim ${sidebar ? "show" : ""}`}
         onClick={() => setSidebar(false)}
       />
-      <aside id="harbor-navigation" className={`sidebar ${sidebar ? "open" : ""}`}>
+      <aside
+        id="harbor-navigation"
+        className={`sidebar ${sidebar ? "open" : ""}`}
+      >
         <Logo light />
         <div className="workspace-label">HARBOR WORKSPACE</div>
         <nav>
@@ -927,10 +982,13 @@ export default function App() {
             <div className="alert">
               <RefreshCw size={18} />
               <span>
-                {pendingDrafts.length} catch draft{pendingDrafts.length > 1 ? "s" : ""} saved
-                on this device.
+                {pendingDrafts.length} catch draft
+                {pendingDrafts.length > 1 ? "s" : ""} saved on this device.
               </span>
-              <button disabled={busy || draftStore.busy || !online} onClick={syncDrafts}>
+              <button
+                disabled={busy || draftStore.busy || !online}
+                onClick={syncDrafts}
+              >
                 Sync now
               </button>
               <button onClick={() => go("catches")}>View drafts</button>
@@ -1164,13 +1222,19 @@ export default function App() {
                 type={page}
               />
               {page === "catches" && role === "seller" && (
-                <DraftPanel store={draftStore} online={online} allowSetup={online}
+                <DraftPanel
+                  store={draftStore}
+                  online={online}
+                  allowSetup={online}
                   authorize={async () => {
                     const { user: current } = await api("/auth/me");
-                    if (current.id !== user.id || current.role !== "seller") throw new Error("Sign in again as this seller.");
+                    if (current.id !== user.id || current.role !== "seller")
+                      throw new Error("Sign in again as this seller.");
                     await verifyDraftOwner(current);
                   }}
-                  onSync={syncDrafts} onEdit={setCatchForm} />
+                  onSync={syncDrafts}
+                  onEdit={setCatchForm}
+                />
               )}
             </>
           )}
@@ -2316,7 +2380,10 @@ function LotModal({ id, user, close, run, busy, onEdit, toast, online }) {
   }, [load]);
   async function mutate(endpoint, body = {}, message = "Auction updated.") {
     if (endpoint === "bids" && (!online || !navigator.onLine)) {
-      toast("Bids require a live server connection and are never queued.", "error");
+      toast(
+        "Bids require a live server connection and are never queued.",
+        "error",
+      );
       return false;
     }
     const ok = await run(
