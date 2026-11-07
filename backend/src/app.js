@@ -960,14 +960,16 @@ export function createApp(
   );
   const dist = fileURLToPath(new URL("../../frontend/dist", import.meta.url));
   if (existsSync(dist)) {
-    app.use(express.static(dist, {
-      setHeaders(res, path) {
-        // Let the browser discover new workers and manifests on each visit.
-        // Versioned JS/CSS remain safe to precache in the public app shell.
-        if (/\/(?:sw\.js|index\.html|manifest\.webmanifest)$/.test(path))
-          res.set("Cache-Control", "no-cache");
-      },
-    }));
+    app.use(
+      express.static(dist, {
+        setHeaders(res, path) {
+          // Let the browser discover new workers and manifests on each visit.
+          // Versioned JS/CSS remain safe to precache in the public app shell.
+          if (/\/(?:sw\.js|index\.html|manifest\.webmanifest)$/.test(path))
+            res.set("Cache-Control", "no-cache");
+        },
+      }),
+    );
     app.get("/{*path}", (req, res, next) =>
       req.path.startsWith("/api/")
         ? next()

@@ -2735,36 +2735,136 @@ body {
   font-size: 12px;
   text-align: center;
 }
-.local-entry { padding: 20px; text-align: center; }
-.local-drafts { padding: 22px; margin: 24px 0; }
-.local-drafts p { margin: 12px 0; line-height: 1.65; }
-.vault-form { display: flex; flex-wrap: wrap; align-items: end; gap: 16px; margin: 20px 0; }
-.vault-form label { flex: 1 1 240px; }
-.vault-form input { width: 100%; }
-.draft-row { flex-wrap: wrap; gap: 12px; }
-.draft-row > div { min-width: 0; flex: 1 1 180px; overflow-wrap: anywhere; }
-.draft-row small { display: block; }
-.draft-state { font-weight: 700; text-transform: capitalize; }
-.draft-state.failed { color: #ae342c; }
-.draft-state.synced { color: #08786d; }
-.offline-workspace { max-width: 900px; padding: 24px; margin: auto; min-height: 85dvh; }
-.offline-workspace header { display: flex; flex-wrap: wrap; gap: 18px; align-items: center; justify-content: space-between; margin-bottom: 24px; }
-.offline-workspace h1 { font-size: 24px; }
-.sidebar { padding-top: max(22px, env(safe-area-inset-top)); padding-bottom: max(16px, env(safe-area-inset-bottom)); overflow-y: auto; }
-.modal { overscroll-behavior: contain; scroll-padding-bottom: 32px; }
-.modal-backdrop { padding-bottom: max(20px, env(safe-area-inset-bottom)); }
+.local-entry {
+  padding: 20px;
+  text-align: center;
+}
+.local-drafts {
+  padding: 22px;
+  margin: 24px 0;
+}
+.local-drafts p {
+  margin: 12px 0;
+  line-height: 1.65;
+}
+.vault-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 16px;
+  margin: 20px 0;
+}
+.vault-form label {
+  flex: 1 1 240px;
+}
+.vault-form input {
+  width: 100%;
+}
+.draft-row {
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.draft-row > div {
+  min-width: 0;
+  flex: 1 1 180px;
+  overflow-wrap: anywhere;
+}
+.draft-row small {
+  display: block;
+}
+.draft-state {
+  font-weight: 700;
+  text-transform: capitalize;
+}
+.draft-state.failed {
+  color: #ae342c;
+}
+.draft-state.synced {
+  color: #08786d;
+}
+.offline-workspace {
+  max-width: 900px;
+  padding: 24px;
+  margin: auto;
+  min-height: 85dvh;
+}
+.offline-workspace header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+.offline-workspace h1 {
+  font-size: 24px;
+}
+.sidebar {
+  padding-top: max(22px, env(safe-area-inset-top));
+  padding-bottom: max(16px, env(safe-area-inset-bottom));
+  overflow-y: auto;
+}
+.modal {
+  overscroll-behavior: contain;
+  scroll-padding-bottom: 32px;
+}
+.modal-backdrop {
+  padding-bottom: max(20px, env(safe-area-inset-bottom));
+}
 @media (max-width: 760px) {
-  button, .btn, .icon-btn, .text-btn, .sidebar nav button { min-height: 44px; }
-  .icon-btn { min-width: 44px; }
-  .mobile-menu { min-width: 44px; justify-content: center; }
-  input, select, textarea { font-size: 16px; min-height: 44px; }
-  .app-shell, .auth-page, .auth-form-wrap { min-height: 100dvh; }
-  .topbar { padding-top: max(12px, env(safe-area-inset-top)); height: auto; min-height: 70px; }
-  .modal { max-height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 24px); }
-  .modal-backdrop { align-items: flex-start; overflow-y: auto; padding-top: max(12px, env(safe-area-inset-top)); }
-  .form-footer { flex-wrap: wrap; }
-  .local-drafts { padding: 16px; }
-  .offline-workspace { padding: 18px; }
-  .vault-form .btn { width: 100%; }
-  .sidebar-scrim { touch-action: none; }
+  button,
+  .btn,
+  .icon-btn,
+  .text-btn,
+  .sidebar nav button {
+    min-height: 44px;
+  }
+  .icon-btn {
+    min-width: 44px;
+  }
+  .mobile-menu {
+    min-width: 44px;
+    justify-content: center;
+  }
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+    min-height: 44px;
+  }
+  .app-shell,
+  .auth-page,
+  .auth-form-wrap {
+    min-height: 100dvh;
+  }
+  .topbar {
+    padding-top: max(12px, env(safe-area-inset-top));
+    height: auto;
+    min-height: 70px;
+  }
+  .modal {
+    max-height: calc(
+      100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 24px
+    );
+  }
+  .modal-backdrop {
+    align-items: flex-start;
+    overflow-y: auto;
+    padding-top: max(12px, env(safe-area-inset-top));
+  }
+  .form-footer {
+    flex-wrap: wrap;
+  }
+  .local-drafts {
+    padding: 16px;
+  }
+  .offline-workspace {
+    padding: 18px;
+  }
+  .vault-form .btn {
+    width: 100%;
+  }
+  .sidebar-scrim {
+    touch-action: none;
+  }
 }

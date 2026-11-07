@@ -6,7 +6,8 @@ export const pwaOptions = {
     id: "/",
     name: "HarborX — Fish Harbor Catch and Auction Management",
     short_name: "HarborX",
-    description: "Record catches and manage harbor auctions. Seller drafts work offline after setup.",
+    description:
+      "Record catches and manage harbor auctions. Seller drafts work offline after setup.",
     lang: "en",
     start_url: "/",
     scope: "/",
@@ -14,9 +15,24 @@ export const pwaOptions = {
     background_color: "#f5f8fa",
     theme_color: "#0d3558",
     icons: [
-      { src: "/icons/pwa-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
-      { src: "/icons/pwa-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
-      { src: "/icons/maskable-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
+      {
+        src: "/icons/pwa-192.png",
+        sizes: "192x192",
+        type: "image/png",
+        purpose: "any",
+      },
+      {
+        src: "/icons/pwa-512.png",
+        sizes: "512x512",
+        type: "image/png",
+        purpose: "any",
+      },
+      {
+        src: "/icons/maskable-512.png",
+        sizes: "512x512",
+        type: "image/png",
+        purpose: "maskable",
+      },
     ],
   },
   workbox: {

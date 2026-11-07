@@ -5,8 +5,14 @@ backend/data
 backend/.env
 .env
 .git
+.github
 .openai
 docs
 frontend/test-results
 frontend/playwright-report
 *.zip
+.vscode
+.idea
+*.log
+.DS_Store
+Thumbs.db

@@ -79,7 +79,10 @@ test("admin login rejects wrong passwords and retains a protected cookie session
   assert.match(cookie, /HttpOnly/i);
   assert.match(cookie, /SameSite=Lax/i);
   assert.match(cookie, /Max-Age=43200/i);
-  assert.equal((await agent.get("/api/auth/me")).body.user.id, accepted.body.user.id);
+  assert.equal(
+    (await agent.get("/api/auth/me")).body.user.id,
+    accepted.body.user.id,
+  );
   assert.equal((await agent.get("/api/users")).status, 200);
 });
 test("development supports local HTTP while production retains HTTPS upgrade policy", async () => {
@@ -89,11 +92,19 @@ test("development supports local HTTP while production retains HTTPS upgrade pol
     const development = createApp(db, { testing: true });
     const local = await request(development).get("/api/health");
     assert.equal(local.status, 200);
-    assert.ok(!local.headers["content-security-policy"].includes("upgrade-insecure-requests"));
+    assert.ok(
+      !local.headers["content-security-policy"].includes(
+        "upgrade-insecure-requests",
+      ),
+    );
     process.env.NODE_ENV = "production";
     const production = createApp(db, { testing: true });
     const deployed = await request(production).get("/api/health");
-    assert.ok(deployed.headers["content-security-policy"].includes("upgrade-insecure-requests"));
+    assert.ok(
+      deployed.headers["content-security-policy"].includes(
+        "upgrade-insecure-requests",
+      ),
+    );
   } finally {
     if (previous === undefined) delete process.env.NODE_ENV;
     else process.env.NODE_ENV = previous;

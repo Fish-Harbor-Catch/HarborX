@@ -1,26 +1,35 @@
 {
-    "name":  "harborx",
-    "version":  "1.0.0",
-    "private":  true,
-    "workspaces":  [
-                       "frontend",
-                       "backend"
-                   ],
-    "scripts":  {
-                    "dev":  "concurrently -k \"npm run dev -w backend\" \"npm run dev -w frontend\"",
-                    "build":  "npm run build -w frontend",
-                    "start":  "npm run start -w backend",
-                    "seed":  "npm run seed -w backend",
-                    "test":  "npm run test -w frontend \u0026\u0026 npm run test -w backend",
-                    "create-admin":  "npm run create-admin -w backend",
-                    "format":  "prettier --write frontend/src backend/src/*.js backend/scripts backend/tests scripts *.json frontend/*.js",
-                    "test:pwa":  "npm run build \u0026\u0026 npm run test:pwa -w frontend"
-                },
-    "devDependencies":  {
-                            "concurrently":  "^10.0.6",
-                            "prettier":  "3.6.2"
-                        },
-    "engines":  {
-                    "node":  "\u003e=22"
-                }
+  "name": "harborx",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "dev": "concurrently -k \"npm run dev -w backend\" \"npm run dev -w frontend\"",
+    "build": "npm run build -w frontend",
+    "start": "npm run start -w backend",
+    "seed": "npm run seed -w backend",
+    "test": "npm run test -w frontend && npm run test -w backend",
+    "create-admin": "npm run create-admin -w backend",
+    "format": "prettier --write frontend/src backend/src/*.js backend/scripts backend/tests *.json frontend/*.js",
+    "icons": "npm run icons -w frontend",
+    "test:pwa": "npm run build && npm run test:pwa -w frontend",
+    "docker:build": "docker compose build",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "docker:logs": "docker compose logs -f",
+    "docker:dev": "docker compose -f compose.dev.yaml up --build",
+    "docker:dev:down": "docker compose -f compose.dev.yaml down",
+    "docker:admin": "docker compose exec app npm run create-admin",
+    "docker:seed": "docker compose exec app npm run seed"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.6",
+    "prettier": "3.6.2"
+  },
+  "engines": {
+    "node": ">=22"
+  }
 }
