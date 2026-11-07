@@ -1,0 +1,44 @@
+services:
+  database:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-harborx}
+      POSTGRES_USER: ${POSTGRES_USER:-harborx}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-harborx_dev_password}
+    ports:
+      - "5432:5432"
+    volumes:
+      - harborx_dev_database:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-harborx} -d ${POSTGRES_DB:-harborx}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    environment:
+      NODE_ENV: development
+      PORT: 5050
+      DATABASE_URL: postgresql://${POSTGRES_USER:-harborx}:${POSTGRES_PASSWORD:-harborx_dev_password}@database:5432/${POSTGRES_DB:-harborx}
+      JWT_SECRET: ${JWT_SECRET:-harborx_super_secret_jwt_key_32_characters_minimum!}
+      CLIENT_ORIGIN: http://localhost:5173,http://127.0.0.1:5173
+      DEMO_SEED: ${DEMO_SEED:-true}
+      COMMISSION_RATE: 5
+      PAYMENT_DUE_HOURS: 48
+      COOKIE_SECURE: "false"
+    volumes:
+      - ./backend/src:/app/backend/src
+      - ./backend/scripts:/app/backend/scripts
+    ports:
+      - "5050:5050"
+    depends_on:
+      database:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  harborx_dev_database:
