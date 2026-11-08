@@ -159,18 +159,18 @@ function Auth({ onLogin, toast, demo }) {
             <em>Connected harbors.</em>
           </h1>
           <p>
-            {t("auth_story_desc", "From the first catch to the final bid. One simple digital harbor for Sri Lanka’s fishing communities to trade with confidence.")}
+            {t("auth_story_desc", "Digital harbor auction management for Sri Lanka’s coastal fishing communities. Record catches, conduct multi-round bidding, and settle payments.")}
           </p>
           <HarborArt />
           <div className="auth-feature">
             <ShieldCheck size={22} />
             <div>
-              <strong>{t("auth_feature_trace_title", "Every bid. Every catch. Accounted for.")}</strong>
-              <span>{t("auth_feature_trace_desc", "Transparent auctions, from boat to buyer.")}</span>
+              <strong>{t("auth_feature_trace_title", "Verified dockside auctions")}</strong>
+              <span>{t("auth_feature_trace_desc", "Transparent bidding from boat arrival to invoice settlement.")}</span>
             </div>
           </div>
         </div>
-        <small>{t("auth_community_tagline", "Built for our coast. Made for our community.")}</small>
+        <small>{t("auth_community_tagline", "Coastal Fish Auction & Catch Management System")}</small>
       </section>
       <section className="auth-form-wrap">
         <div className="auth-top">
@@ -374,7 +374,7 @@ function Auth({ onLogin, toast, demo }) {
             </div>
           )}
           <div className="auth-foot">
-            <ShieldCheck size={14} /> {t("auth_secure_access", "Secure access for your harbor community")}
+            <ShieldCheck size={14} /> {t("auth_secure_access", "Authorized harbor access only")}
           </div>
         </form>
         <footer>
@@ -591,7 +591,7 @@ function HarborApp() {
       <div className="loading">
         <Logo />
         <span className="spinner" />
-        <p>Opening your harbor…</p>
+        <p>{t("loading_harbor", "Loading HarborX…")}</p>
       </div>
     );
   const toastEl = notice && (
@@ -726,14 +726,14 @@ function HarborApp() {
             {
               label: t("overview_stat_active_auctions", "Active auctions"),
               value: own.filter((l) => l.status === "live").length,
-              sub: t("overview_stat_active_auctions_sub", "Monitor your latest bids"),
+              sub: t("overview_stat_active_auctions_sub", "Currently in bidding"),
               icon: Gavel,
               color: "purple",
             },
             {
               label: t("overview_stat_payments_pending", "Payments pending"),
               value: `LKR ${money(outstanding)}`,
-              sub: t("overview_stat_payments_pending_sub", "Outstanding buyer payments"),
+              sub: t("overview_stat_payments_pending_sub", "Payments due"),
               icon: Wallet,
               color: "amber",
             },
@@ -742,7 +742,7 @@ function HarborApp() {
             {
               label: t("overview_stat_buyer_live", "Live auctions"),
               value: live.length,
-              sub: t("overview_stat_buyer_live_sub", "Fresh opportunities at the harbor"),
+              sub: t("overview_stat_buyer_live_sub", "Open for bidding"),
               icon: Gavel,
               color: "teal",
             },
@@ -756,14 +756,14 @@ function HarborApp() {
             {
               label: t("overview_stat_won_lots", "Won lots"),
               value: won.length,
-              sub: t("overview_stat_won_lots_sub", "Your successful auctions"),
+              sub: t("overview_stat_won_lots_sub", "Awaiting payment settlement"),
               icon: ShieldCheck,
               color: "purple",
             },
             {
               label: t("overview_stat_payments_pending", "Payments pending"),
               value: `LKR ${money(outstanding)}`,
-              sub: t("overview_stat_payments_pending_sub", "Your outstanding balance"),
+              sub: t("overview_stat_payments_pending_sub", "Payments due"),
               icon: Wallet,
               color: "amber",
             },
@@ -954,7 +954,7 @@ function HarborApp() {
           )}
           <footer className="app-footer">
             <span>
-              © {new Date().getFullYear()} HarborX · Connected by the coast.
+              © {new Date().getFullYear()} HarborX · {t("auth_footer_tag", "Fish Harbor Management")}
             </span>
             <span>
               <i className={error ? "warning-dot" : ""} />
@@ -1033,7 +1033,7 @@ function CatchForm({ value, user, onClose, run, busy, onDraft, online }) {
   return (
     <Modal
       title={edit ? t("catch_edit_title", "Edit catch") : t("catch_register_title", "Register a new catch")}
-      subtitle={t("catch_subtitle", "Good records start on the boat. Prices are in LKR per kg.")}
+      subtitle={t("catch_subtitle", "Enter catch details. Prices are in LKR per kg.")}
       close={onClose}
     >
       <form className="modal-body catch-form" onSubmit={submit}>

@@ -22,15 +22,15 @@ export function ActivityScreen({ events = [], onRefresh, role = "seller" }) {
     role === "admin"
       ? t("overview_eyebrow_admin", "HARBOR OPERATIONS")
       : role === "seller"
-        ? t("overview_eyebrow_seller", "FROM YOUR BOAT TO THE MARKET")
-        : t("overview_eyebrow_buyer", "FRESH OPPORTUNITIES, FAIR PRICES");
+        ? t("overview_eyebrow_seller", "SELLER PORTAL")
+        : t("overview_eyebrow_buyer", "BUYER PORTAL");
 
   return (
     <>
       <PageHeader>
         <PageTitle
           eyebrow={eyebrow}
-          description={t("activity_desc", "A traceable record of activity across your workspace.")}
+          description={t("activity_desc", "Audit trail of catch registrations, bids, and manager actions.")}
         >
           {t("activity_title", "Activity log")}
         </PageTitle>

@@ -42,15 +42,15 @@ export function PaymentsScreen({ invoices = [], role = "seller", onOpen }) {
     role === "admin"
       ? t("overview_eyebrow_admin", "HARBOR OPERATIONS")
       : role === "seller"
-        ? t("overview_eyebrow_seller", "FROM YOUR BOAT TO THE MARKET")
-        : t("overview_eyebrow_buyer", "FRESH OPPORTUNITIES, FAIR PRICES");
+        ? t("overview_eyebrow_seller", "SELLER PORTAL")
+        : t("overview_eyebrow_buyer", "BUYER PORTAL");
 
   return (
     <>
       <PageHeader>
         <PageTitle
           eyebrow={eyebrow}
-          description={t("payments_desc", "A clear view of invoices, payments, and outstanding balances.")}
+          description={t("payments_desc", "Auction invoices, payment receipts, and balance settlement.")}
         >
           {t("payments_title", "Payments")}
         </PageTitle>

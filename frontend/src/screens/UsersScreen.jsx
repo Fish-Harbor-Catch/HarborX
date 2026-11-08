@@ -31,7 +31,7 @@ export function UsersScreen({ users = [], run, busy = false }) {
       <PageHeader>
         <PageTitle
           eyebrow={t("users_eyebrow", "HARBOR OPERATIONS")}
-          description={t("users_desc", "Manage access and verify your harbor community.")}
+          description={t("users_desc", "Manage user accounts and verify buyer bidding access.")}
         >
           {t("users_title", "User management")}
         </PageTitle>
@@ -41,7 +41,7 @@ export function UsersScreen({ users = [], run, busy = false }) {
         <CardHeader>
           <div>
             <h2>
-              {t("users_heading", "Your harbor community")} <span className="count">{users.length}</span>
+              {t("users_heading", "Registered accounts")} <span className="count">{users.length}</span>
             </h2>
             <p>{t("users_heading_sub", "Only verified Buyers can participate in bidding.")}</p>
           </div>

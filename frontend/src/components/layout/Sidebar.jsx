@@ -182,8 +182,8 @@ export function Sidebar({
           {!isCollapsed && (
             <div className="harbor-help">
               <LifeBuoy size={22} aria-hidden="true" />
-              <strong>{t("auth_feature_trace_title", "Your harbor, connected.")}</strong>
-              <p>{t("auth_feature_trace_desc", "Clear records. Confident trading.")}</p>
+              <strong>{t("sidebar_rules_title", "Auction rules")}</strong>
+              <p>{t("sidebar_rules_desc", "Review codified bidding, inspection, and settlement rules.")}</p>
               <button type="button" onClick={handleRules}>
                 {t("settings_rules_heading", "Auction rules")} <ArrowUpRight size={14} aria-hidden="true" />
               </button>

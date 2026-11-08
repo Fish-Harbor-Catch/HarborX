@@ -41,8 +41,8 @@ export function OverviewScreen({
     role === "admin"
       ? t("overview_eyebrow_admin", "HARBOR OPERATIONS")
       : role === "seller"
-        ? t("overview_eyebrow_seller", "FROM YOUR BOAT TO THE MARKET")
-        : t("overview_eyebrow_buyer", "FRESH OPPORTUNITIES, FAIR PRICES");
+        ? t("overview_eyebrow_seller", "SELLER PORTAL")
+        : t("overview_eyebrow_buyer", "BUYER PORTAL");
 
   const firstName = user?.name ? user.name.split(" ")[0] : "Captain";
   const activeLots = role === "seller" ? own : live;
@@ -52,7 +52,7 @@ export function OverviewScreen({
       <PageHeader>
         <PageTitle
           eyebrow={eyebrow}
-          description={t("overview_description", "Here’s what’s happening at your harbor today.")}
+          description={t("overview_description", "Harbor auction activity, catch status, and trading summary.")}
         >
           {t("overview_greeting", `Welcome back, ${firstName}.`, { name: firstName })}
         </PageTitle>
@@ -83,19 +83,19 @@ export function OverviewScreen({
       <section className="hero-banner">
         <div>
           <div className="hero-kicker">
-            <span aria-hidden="true" /> {t("overview_hero_kicker", "YOUR HARBOR. IN SYNC.")}
+            <span aria-hidden="true" /> {t("overview_hero_kicker", "DAILY OVERVIEW")}
           </div>
           <h2>
             {role === "seller"
-              ? t("overview_hero_seller", "A good catch deserves a fair price.")
+              ? t("overview_hero_seller", "Catches and auction sales")
               : role === "buyer"
-                ? t("overview_hero_buyer", "Your next fresh catch starts here.")
-                : t("overview_hero_admin", "A clearer view of every catch.")}
+                ? t("overview_hero_buyer", "Live auctions and bidding")
+                : t("overview_hero_admin", "Harbor auctions and catch inspection")}
           </h2>
           <p>
             {role === "admin"
-              ? t("overview_hero_desc_admin", "Connect your fishing community with transparent, well-managed auctions.")
-              : t("overview_hero_desc_general", "Discover the difference a connected harbor makes.")}
+              ? t("overview_hero_desc_admin", "Supervise arrivals, inspect weights, manage bidding rounds, and record payments.")
+              : t("overview_hero_desc_general", "Track dockside auction rounds, weight inspection, and payment settlement.")}
           </p>
           <Button
             variant="white"
@@ -103,7 +103,7 @@ export function OverviewScreen({
           >
             {role === "seller"
               ? t("action_view_my_catches", "View my catches")
-              : t("action_explore_auctions", "Explore auctions")}
+              : t("action_explore_auctions", "View auctions")}
             <ArrowRight size={16} aria-hidden="true" />
           </Button>
         </div>
@@ -137,8 +137,8 @@ export function OverviewScreen({
               </h2>
               <p>
                 {role === "seller"
-                  ? t("overview_panel_seller_sub", "Follow your catch through every stage.")
-                  : t("overview_panel_buyer_sub", "Fresh catches. Open bidding. Real opportunities.")}
+                  ? t("overview_panel_seller_sub", "Recent catches submitted from your boat.")
+                  : t("overview_panel_buyer_sub", "Active auctions open for bidding.")}
               </p>
             </div>
             <Button
@@ -170,7 +170,7 @@ export function OverviewScreen({
           <CardHeader>
             <div>
               <h2>{t("overview_panel_recent_activity", "Recent activity")}</h2>
-              <p>{t("overview_panel_recent_activity_sub", "Your harbor, at a glance.")}</p>
+              <p>{t("overview_panel_recent_activity_sub", "Latest auction and payment events.")}</p>
             </div>
             <Activity size={18} aria-hidden="true" />
           </CardHeader>
@@ -194,7 +194,7 @@ export function OverviewScreen({
                 ? t("overview_panel_pipeline_admin", "Auction pipeline")
                 : t("overview_panel_pipeline_general", "Your trading summary")}
             </h2>
-            <p>{t("overview_panel_pipeline_sub", "From registered catch to completed sale.")}</p>
+            <p>{t("overview_panel_pipeline_sub", "Catches grouped by current auction stage.")}</p>
           </div>
           <span className="muted small-text">LKR · Sri Lanka</span>
         </CardHeader>

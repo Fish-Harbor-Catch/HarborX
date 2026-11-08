@@ -24,7 +24,7 @@ export function Logo({
       {!collapsed && (
         <span>
           Harbor<span className="logo-x">X</span>
-          <small>CATCH. CONNECT. TRADE.</small>
+          <small>FISH HARBOR AUCTIONS</small>
         </span>
       )}
     </div>

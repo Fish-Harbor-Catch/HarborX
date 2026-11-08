@@ -36,7 +36,7 @@ export function ReportsScreen({ lots = [], invoices = [] }) {
       <PageHeader>
         <PageTitle
           eyebrow={t("reports_eyebrow", "HARBOR OPERATIONS")}
-          description={t("reports_desc", "Turn your auction records into useful insights.")}
+          description={t("reports_desc", "Auction turnover, commission, and species volume records.")}
         >
           {t("reports_title", "Reports")}
         </PageTitle>

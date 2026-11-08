@@ -48,7 +48,7 @@ export function CatchesScreen({
       <PageHeader>
         <PageTitle
           eyebrow={t("catches_eyebrow", "FROM YOUR BOAT TO THE MARKET")}
-          description={t("catches_desc", "Manage your catch, from registration to the final sale.")}
+          description={t("catches_desc", "Registered catches, inspection statuses, and offline drafts.")}
         >
           {t("catches_title", "My catches")}
         </PageTitle>

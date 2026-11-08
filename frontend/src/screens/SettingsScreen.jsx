@@ -68,8 +68,8 @@ export function SettingsScreen({ user, onUser, run, busy = false }) {
     <>
       <PageHeader>
         <PageTitle
-          eyebrow={t("settings_eyebrow", "ACCOUNT & GOVERNANCE")}
-          description={t("settings_desc", "Your account and the rules that keep trading fair.")}
+          eyebrow={t("settings_eyebrow", "ACCOUNT & SETTINGS")}
+          description={t("settings_desc", "Profile details, display language, and harbor operating rules.")}
         >
           {t("settings_title", "Settings")}
         </PageTitle>
@@ -80,7 +80,7 @@ export function SettingsScreen({ user, onUser, run, busy = false }) {
           <CardHeader>
             <div>
               <h2>{t("settings_profile_heading", "Account profile")}</h2>
-              <p>{t("settings_profile_sub", "Your details in the harbor community.")}</p>
+              <p>{t("settings_profile_sub", "Name, phone number, and boat registration.")}</p>
             </div>
             <UserRound size={20} aria-hidden="true" />
           </CardHeader>
@@ -159,7 +159,7 @@ export function SettingsScreen({ user, onUser, run, busy = false }) {
           <CardHeader>
             <div>
               <h2>{t("settings_rules_heading", "Auction rules")}</h2>
-              <p>{t("settings_rules_sub", "A clear process. A fair outcome.")}</p>
+              <p>{t("settings_rules_sub", "Operating rules governing bidding, inspection, and payment settlement.")}</p>
             </div>
             <ShieldCheck size={20} aria-hidden="true" />
           </CardHeader>

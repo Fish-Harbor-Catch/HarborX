@@ -25,8 +25,8 @@ export function WonLotsScreen({
     <>
       <PageHeader>
         <PageTitle
-          eyebrow={t("won_eyebrow", "FRESH OPPORTUNITIES, FAIR PRICES")}
-          description={t("won_desc", "Your successful bids, ready for the next step.")}
+          eyebrow={t("won_eyebrow", "BUYER PORTAL")}
+          description={t("won_desc", "Completed auction lots awarded to your account.")}
         >
           {t("won_title", "Won lots")}
         </PageTitle>

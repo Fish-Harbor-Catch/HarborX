@@ -24,8 +24,8 @@ export function BidsScreen({ bids = [], user, onSelectLot }) {
     <>
       <PageHeader>
         <PageTitle
-          eyebrow={t("bids_eyebrow", "FRESH OPPORTUNITIES, FAIR PRICES")}
-          description={t("bids_desc", "Keep an eye on every bid you place.")}
+          eyebrow={t("bids_eyebrow", "BUYER PORTAL")}
+          description={t("bids_desc", "Active and completed bids placed from your account.")}
         >
           {t("bids_title", "My bids")}
         </PageTitle>

@@ -27,8 +27,8 @@ export function AuctionsScreen({
     role === "admin"
       ? t("overview_eyebrow_admin", "HARBOR OPERATIONS")
       : role === "seller"
-        ? t("overview_eyebrow_seller", "FROM YOUR BOAT TO THE MARKET")
-        : t("overview_eyebrow_buyer", "FRESH OPPORTUNITIES, FAIR PRICES");
+        ? t("overview_eyebrow_seller", "SELLER PORTAL")
+        : t("overview_eyebrow_buyer", "BUYER PORTAL");
 
   const visibleLots = lots.filter(
     (l) => role === "admin" || !["pending", "cancelled"].includes(l.status),
@@ -39,7 +39,7 @@ export function AuctionsScreen({
       <PageHeader>
         <PageTitle
           eyebrow={eyebrow}
-          description={t("auctions_desc", "Explore fresh catches and follow the latest auction activity.")}
+          description={t("auctions_desc", "Live and scheduled fish auctions across harbors.")}
         >
           {t("auctions_title", "Auctions")}
         </PageTitle>
