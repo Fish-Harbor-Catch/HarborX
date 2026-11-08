@@ -47,6 +47,38 @@ import {
 import { api, money, date, initials, createId } from "./api.js";
 import { useDraftVault } from "./useDraftVault.js";
 import { DraftPanel, OfflineWorkspace } from "./DraftPanel.jsx";
+import { AppShell } from "./components/layout/index.js";
+import { Logo } from "./components/layout/index.js";
+import {
+  Badge,
+  Button,
+  Card,
+  CardHeader,
+  EmptyState as Empty,
+  LoadingIndicator,
+  Modal,
+} from "./components/ui/index.js";
+import {
+  FishArt,
+  HarborArt,
+  Timer,
+  LotCard,
+  AuctionList,
+  ActivityList,
+} from "./components/domain/index.js";
+import {
+  OverviewScreen,
+  AuctionsScreen,
+  CatchesScreen,
+  BidsScreen,
+  WonLotsScreen,
+  PaymentsScreen,
+  UsersScreen,
+  ReportsScreen,
+  ActivityScreen,
+  SettingsScreen,
+} from "./screens/index.js";
+import PwaStatus from "./PwaStatus.jsx";
 import {
   activeOfflineOwner,
   verifyDraftOwner,
@@ -72,203 +104,6 @@ const rolesLabel = {
   seller: "Seller",
   buyer: "Buyer",
 };
-function Logo({ light = false }) {
-  return (
-    <div className={`logo ${light ? "light" : ""}`}>
-      <span className="logo-icon">
-        <Anchor size={24} />
-      </span>
-      <span>
-        Harbor<span className="logo-x">X</span>
-        <small>CATCH. CONNECT. TRADE.</small>
-      </span>
-    </div>
-  );
-}
-function Badge({ status, children }) {
-  return (
-    <span
-      className={`badge ${String(status).toLowerCase().replaceAll(" ", "-")}`}
-    >
-      <i />
-      {children || status}
-    </span>
-  );
-}
-function Empty({
-  icon: Icon = Fish,
-  title = "Nothing here yet",
-  text = "New records will appear here.",
-}) {
-  return (
-    <div className="empty">
-      <span>
-        <Icon size={30} />
-      </span>
-      <h3>{title}</h3>
-      <p>{text}</p>
-    </div>
-  );
-}
-function Timer({ until }) {
-  const [now, setNow] = useState(Date.now());
-  useEffect(() => {
-    const t = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(t);
-  }, []);
-  const seconds = Math.max(0, Math.floor((new Date(until) - now) / 1000));
-  return (
-    <span>
-      {seconds
-        ? `${Math.floor(seconds / 3600) ? `${Math.floor(seconds / 3600)}h ` : ""}${Math.floor((seconds % 3600) / 60)}m ${String(seconds % 60).padStart(2, "0")}s`
-        : "Round ended"}
-    </span>
-  );
-}
-function FishArt({ type = "tuna", large = false }) {
-  const shrimp = type === "prawns";
-  return (
-    <svg
-      className={`fish-art ${large ? "large" : ""}`}
-      viewBox="0 0 320 144"
-      role="img"
-      aria-label={shrimp ? "Prawns illustration" : "Fresh fish illustration"}
-    >
-      <defs>
-        <linearGradient id={`sea-${type}`} x2="1" y2="1">
-          <stop stopColor="#dcefed" />
-          <stop offset="1" stopColor="#eff7f7" />
-        </linearGradient>
-        <linearGradient id={`fish-${type}`} x2="0.1" y2="1">
-          <stop stopColor="#547e91" />
-          <stop offset=".55" stopColor="#a7c0c9" />
-          <stop offset="1" stopColor="#e8f0ef" />
-        </linearGradient>
-      </defs>
-      <rect width="320" height="144" rx="14" fill={`url(#sea-${type})`} />
-      <circle cx="257" cy="28" r="47" fill="#fff" opacity=".28" />
-      <path
-        d="M0 114 Q80 90 160 115T320 110"
-        fill="none"
-        stroke="#b9dcdb"
-        strokeWidth="1"
-      />
-      <path
-        d="M0 130 Q80 106 160 131T320 126"
-        fill="none"
-        stroke="#c5e2df"
-        strokeWidth="1"
-      />
-      {shrimp ? (
-        <g
-          transform="translate(96 18)"
-          fill="#d39880"
-          stroke="#a96e58"
-          strokeWidth="1.5"
-        >
-          <path d="M101 36C70 1 15 12 20 61s56 56 76 21C66 102 42 82 47 58s35-26 54-22Z" />
-          <path
-            d="m95 33 26-9-13 25-18-4M93 38q29-29 48-17M92 40q41-5 49 12M33 34l18 8m-26 8 23 6m-24 8 24 4m-19 9 25-2m-13 17 22-11m1 16 12-18m-32-6-7 22m21-16 5 24"
-            fill="none"
-          />
-        </g>
-      ) : (
-        <g transform="translate(16 6) rotate(-8 145 65)">
-          <path d="M93 66 39 30 48 70 32 105 91 83" fill="#63899b" />
-          <path
-            d="M80 75C121 19 226 22 272 70c-45 53-151 59-192 5Z"
-            fill={`url(#fish-${type})`}
-            stroke="#718f9c"
-            strokeWidth="1"
-          />
-          <path d="m144 37 39-21 6 22m-45 67 35 17 6-18" fill="#67899a" />
-          <path
-            d="M216 42q-20 28 4 58"
-            fill="none"
-            stroke="#6c8d9a"
-            strokeWidth="2"
-          />
-          <circle cx="245" cy="61" r="5" fill="#163e54" />
-          <circle cx="247" cy="59" r="1.5" fill="white" />
-          <path
-            d="m266 79-15 1M132 77l35-9-12 22"
-            stroke="#708f9c"
-            fill="none"
-          />
-          <path
-            d="m112 58 17 4m-4-12 16 4m-1 33 19 3m-38-18 14 3"
-            stroke="#b9d1d4"
-            strokeWidth="1.5"
-          />
-        </g>
-      )}
-    </svg>
-  );
-}
-function HarborArt() {
-  return (
-    <svg viewBox="0 0 480 190" className="harbor-art" aria-hidden="true">
-      <circle cx="352" cy="61" r="38" fill="#7dd8d1" opacity=".26" />
-      <path
-        d="M0 161Q60 142 120 160T240 160T360 160T480 160V190H0Z"
-        fill="#3ca7ac"
-        opacity=".22"
-      />
-      <path
-        d="M0 177Q60 158 120 176T240 176T360 176T480 176"
-        fill="none"
-        stroke="#74d4cf"
-        opacity=".45"
-      />
-      <g transform="translate(130 30)">
-        <path d="m22 101 29 38h162l32-38Z" fill="#d6efed" />
-        <path d="M33 105h199l-9 12H42Z" fill="#23a3a6" />
-        <path d="M84 100V62h88v38" fill="#fff" />
-        <path d="M95 73h20v15H95Zm31 0h20v15h-20Z" fill="#458697" />
-        <path
-          d="M87 61V49h91l10 14"
-          stroke="#cde7e8"
-          strokeWidth="7"
-          fill="none"
-        />
-        <path
-          d="M153 48V9m-24 12h50M190 101V33l28 6"
-          stroke="#b5d9dd"
-          strokeWidth="3"
-          fill="none"
-        />
-        <path d="m155 11 26 11-26 10" fill="#24b8ae" />
-        <circle
-          cx="77"
-          cy="119"
-          r="10"
-          fill="none"
-          stroke="#0d3558"
-          strokeWidth="4"
-        />
-        <circle
-          cx="197"
-          cy="119"
-          r="10"
-          fill="none"
-          stroke="#0d3558"
-          strokeWidth="4"
-        />
-      </g>
-      <path
-        d="M390 141V55h13v86m-16-87h19l-9-13Zm-5 91h33"
-        fill="#9bc8cc"
-        opacity=".45"
-      />
-      <path
-        d="m27 44 12-5 12 5m18-15 10-4 10 4"
-        fill="none"
-        stroke="#b0dddd"
-        strokeWidth="2"
-      />
-    </svg>
-  );
-}
 
 function Auth({ onLogin, toast, demo }) {
   const [register, setRegister] = useState(false),
@@ -683,15 +518,18 @@ export default function App() {
   );
   if (!user && offlineOwner && (localMode || !online)) {
     return (
-      <OfflineWorkspace
-        owner={offlineOwner}
-        renderForm={(props) => <CatchForm {...props} />}
-        onReturn={() => {
-          setLocalMode(false);
-          setOfflineOwner(null);
-          window.location.reload();
-        }}
-      />
+      <>
+        <OfflineWorkspace
+          owner={offlineOwner}
+          renderForm={(props) => <CatchForm {...props} />}
+          onReturn={() => {
+            setLocalMode(false);
+            setOfflineOwner(null);
+            window.location.reload();
+          }}
+        />
+        <PwaStatus />
+      </>
     );
   }
   if (!user)
@@ -727,6 +565,7 @@ export default function App() {
           </div>
         )}
         {toastEl}
+        <PwaStatus />
       </>
     );
   const role = user.role,
@@ -839,125 +678,24 @@ export default function App() {
             },
           ];
   return (
-    <div className="app-shell">
-      <div
-        className={`sidebar-scrim ${sidebar ? "show" : ""}`}
-        onClick={() => setSidebar(false)}
-      />
-      <aside
-        id="harbor-navigation"
-        className={`sidebar ${sidebar ? "open" : ""}`}
-      >
-        <Logo light />
-        <div className="workspace-label">HARBOR WORKSPACE</div>
-        <nav>
-          {nav.map((key) => {
-            const [label, Icon] = NAV[key];
-            return (
-              <button
-                key={key}
-                className={page === key ? "active" : ""}
-                onClick={() => go(key)}
-              >
-                <Icon size={19} />
-                {label}
-                {key === "auctions" && live.length > 0 && (
-                  <span>{live.length}</span>
-                )}
-                {key === "users" &&
-                  users.some((u) => u.role === "buyer" && !u.verified) && (
-                    <i className="nav-dot" />
-                  )}
-              </button>
-            );
-          })}
-        </nav>
-        <div className="workspace-label second">WORKSPACE</div>
-        <nav>
-          {["activity", "settings"].map((key) => {
-            const [label, Icon] = NAV[key];
-            return (
-              <button
-                key={key}
-                className={page === key ? "active" : ""}
-                onClick={() => go(key)}
-              >
-                <Icon size={19} />
-                {label}
-              </button>
-            );
-          })}
-        </nav>
-        <div className="sidebar-bottom">
-          <div className="harbor-help">
-            <LifeBuoy size={22} />
-            <strong>Your harbor, connected.</strong>
-            <p>Clear records. Confident trading.</p>
-            <button onClick={() => go("settings")}>
-              Auction rules <ArrowUpRight size={14} />
-            </button>
-          </div>
-          <button className="sidebar-user" onClick={() => go("settings")}>
-            <span className="avatar">{initials(user.name)}</span>
-            <span>
-              <strong>{user.name}</strong>
-              <small>{rolesLabel[role]}</small>
-            </span>
-            <Settings size={16} />
-          </button>
-        </div>
-      </aside>
-      <div className="main-shell">
-        <header className="topbar">
-          <div className="breadcrumbs">
-            <button
-              className="mobile-menu"
-              onClick={() => setSidebar(true)}
-              aria-label="Open menu"
-              aria-expanded={sidebar}
-              aria-controls="harbor-navigation"
-            >
-              <Menu />
-            </button>
-            <span>Workspace</span>
-            <ChevronRight size={14} />
-            <strong>{NAV[page]?.[0]}</strong>
-          </div>
-          <div className="topbar-actions">
-            <span className={`connection ${online ? "" : "offline"}`}>
-              {online ? <Wifi size={13} /> : <WifiOff size={13} />}
-              <span>{online ? "Connected" : "Offline"}</span>
-            </span>
-            <span className="top-divider" />
-            <button
-              className="icon-btn"
-              onClick={() => go("activity")}
-              aria-label="View recent activity"
-            >
-              <Bell size={19} />
-              {events.length > 0 && <i />}
-            </button>
-            <span className="avatar small">{initials(user.name)}</span>
-            <button
-              className="icon-btn"
-              onClick={logout}
-              title="Sign out"
-              aria-label="Sign out"
-            >
-              <LogOut size={18} />
-            </button>
-          </div>
-        </header>
-        <main>
-          {demo && (
-            <div className="demo-ribbon">
-              <span>DEMO WORKSPACE</span> Sample records · {rolesLabel[role]}{" "}
-              view{" "}
-              <button onClick={logout}>
-                Switch role <ArrowRight size={13} />
-              </button>
-            </div>
-          )}
+    <AppShell
+      user={user}
+      role={role}
+      page={page}
+      onNavigate={go}
+      isSidebarOpen={sidebar}
+      onOpenSidebar={() => setSidebar(true)}
+      onCloseSidebar={() => setSidebar(false)}
+      liveCount={live.length}
+      hasUnverifiedBuyers={users.some((u) => u.role === "buyer" && !u.verified)}
+      online={online}
+      hasUnreadEvents={events.length > 0}
+      onLogout={logout}
+      onRulesClick={() => go("settings")}
+      demo={demo}
+      rolesLabel={rolesLabel}
+      alerts={
+        <>
           {!online && (
             <div className="alert warning">
               <WifiOff size={18} /> You’re offline. Sellers can save catch
@@ -978,7 +716,49 @@ export default function App() {
               browse auctions while you wait.
             </div>
           )}
-          {pendingDrafts.length > 0 && (
+        </>
+      }
+      modals={
+        <>
+          {selected && (
+            <LotModal
+              id={selected}
+              user={user}
+              close={() => setSelected(null)}
+              run={run}
+              busy={busy}
+              onEdit={(l) => {
+                setSelected(null);
+                setCatchForm(l);
+              }}
+              toast={toast}
+              online={online}
+            />
+          )}
+          {catchForm && (
+            <CatchForm
+              value={catchForm}
+              user={user}
+              busy={busy}
+              run={run}
+              onClose={() => setCatchForm(null)}
+              onDraft={async (d) => {
+                try {
+                  await draftStore.save(d);
+                  setCatchForm(null);
+                  toast("Catch draft saved securely on this device.");
+                } catch (error) {
+                  toast(`Draft not saved: ${error.message}`, "error");
+                }
+              }}
+              online={online}
+            />
+          )}
+          {toastEl}
+        </>
+      }
+    >
+      {pendingDrafts.length > 0 && (
             <div className="alert">
               <RefreshCw size={18} />
               <span>
@@ -994,354 +774,95 @@ export default function App() {
               <button onClick={() => go("catches")}>View drafts</button>
             </div>
           )}
-          <div className="page-heading">
-            <div>
-              <div className="eyebrow">
-                {role === "admin"
-                  ? "HARBOR OPERATIONS"
-                  : role === "seller"
-                    ? "FROM YOUR BOAT TO THE MARKET"
-                    : "FRESH OPPORTUNITIES, FAIR PRICES"}
-              </div>
-              <h1>
-                {page === "overview"
-                  ? `Welcome back, ${user.name.split(" ")[0]}.`
-                  : NAV[page]?.[0]}
-              </h1>
-              <p>
-                {page === "overview"
-                  ? "Here’s what’s happening at your harbor today."
-                  : {
-                      auctions:
-                        "Explore fresh catches and follow the latest auction activity.",
-                      catches:
-                        "Manage your catch, from registration to the final sale.",
-                      bids: "Keep an eye on every bid you place.",
-                      won: "Your successful bids, ready for the next step.",
-                      payments:
-                        "A clear view of invoices, payments, and outstanding balances.",
-                      users: "Manage access and verify your harbor community.",
-                      reports:
-                        "Turn your auction records into useful insights.",
-                      activity:
-                        "A traceable record of activity across your workspace.",
-                      settings:
-                        "Your account and the rules that keep trading fair.",
-                    }[page]}
-              </p>
-            </div>
-            <div className="heading-actions">
-              {role === "seller" ? (
-                <button
-                  className="btn primary"
-                  onClick={() => setCatchForm({})}
-                >
-                  <Plus size={17} />
-                  Register catch
-                </button>
-              ) : page === "reports" ? (
-                <a className="btn primary" href="/api/reports/export">
-                  <Download size={17} />
-                  Export CSV
-                </a>
-              ) : (
-                <span className="date-pill">
-                  <Clock size={15} />
-                  {new Date().toLocaleDateString("en-GB", {
-                    timeZone: "Asia/Colombo",
-                    day: "numeric",
-                    month: "short",
-                    year: "numeric",
-                  })}
-                </span>
-              )}
-            </div>
-          </div>
           {page === "overview" && (
-            <>
-              <section className="hero-banner">
-                <div>
-                  <div className="hero-kicker">
-                    <span /> YOUR HARBOR. IN SYNC.
-                  </div>
-                  <h2>
-                    {role === "seller"
-                      ? "A good catch deserves a fair price."
-                      : role === "buyer"
-                        ? "Your next fresh catch starts here."
-                        : "A clearer view of every catch."}
-                  </h2>
-                  <p>
-                    {role === "admin"
-                      ? "Connect your fishing community with transparent, well-managed auctions."
-                      : "Discover the difference a connected harbor makes."}
-                  </p>
-                  <button
-                    className="btn white"
-                    onClick={() =>
-                      go(role === "seller" ? "catches" : "auctions")
-                    }
-                  >
-                    {role === "seller" ? "View my catches" : "Explore auctions"}
-                    <ArrowRight size={16} />
-                  </button>
-                </div>
-                <HarborArt />
-              </section>
-              <section className="stats-grid">
-                {stats.map(({ label, value, sub, icon: Icon, color }) => (
-                  <article className="stat-card" key={label}>
-                    <div className="stat-top">
-                      <span>{label}</span>
-                      <div className={`stat-icon ${color}`}>
-                        <Icon size={20} />
-                      </div>
-                    </div>
-                    <strong>{value}</strong>
-                    <small>{sub}</small>
-                  </article>
-                ))}
-              </section>
-              <div className="overview-grid">
-                <section className="panel auctions-panel">
-                  <div className="section-heading">
-                    <div>
-                      <h2>
-                        {role === "seller"
-                          ? "Your latest catches"
-                          : "Live at the harbor"}
-                        <span className="count">
-                          {(role === "seller" ? own : live).length}
-                        </span>
-                      </h2>
-                      <p>
-                        {role === "seller"
-                          ? "Follow your catch through every stage."
-                          : "Fresh catches. Open bidding. Real opportunities."}
-                      </p>
-                    </div>
-                    <button
-                      className="text-btn"
-                      onClick={() =>
-                        go(role === "seller" ? "catches" : "auctions")
-                      }
-                    >
-                      View all
-                      <ArrowRight size={15} />
-                    </button>
-                  </div>
-                  {(role === "seller" ? own : live).length ? (
-                    <div className="lot-grid compact">
-                      {(role === "seller" ? own : live).slice(0, 2).map((l) => (
-                        <LotCard
-                          key={l.id}
-                          lot={l}
-                          onOpen={() => setSelected(l.id)}
-                        />
-                      ))}
-                    </div>
-                  ) : (
-                    <Empty
-                      title="No active catches yet"
-                      text="Published catches will appear here."
-                    />
-                  )}
-                </section>
-                <section className="panel activity-panel">
-                  <div className="section-heading">
-                    <div>
-                      <h2>Recent activity</h2>
-                      <p>Your harbor, at a glance.</p>
-                    </div>
-                    <Activity size={18} />
-                  </div>
-                  <ActivityList events={events.slice(0, 4)} />
-                  <button
-                    className="text-btn activity-link"
-                    onClick={() => go("activity")}
-                  >
-                    View activity log
-                    <ArrowRight size={15} />
-                  </button>
-                </section>
-              </div>
-              <section className="panel">
-                <div className="section-heading">
-                  <div>
-                    <h2>
-                      {role === "admin"
-                        ? "Auction pipeline"
-                        : "Your trading summary"}
-                    </h2>
-                    <p>From registered catch to completed sale.</p>
-                  </div>
-                  <span className="muted small-text">LKR · Sri Lanka</span>
-                </div>
-                <div className="pipeline">
-                  {[
-                    ["pending", "Awaiting review"],
-                    ["scheduled", "Scheduled"],
-                    ["live", "In auction"],
-                    ["closed", "Completed"],
-                  ].map(([s, label], i) => (
-                    <div key={s}>
-                      <span className={`pipeline-number p${i}`}>
-                        {visible.filter((l) => l.status === s).length}
-                      </span>
-                      <div>
-                        <strong>{label}</strong>
-                        <small>
-                          {s === "closed" ? "Sales recorded" : "Auction lots"}
-                        </small>
-                      </div>
-                      {i < 3 && <ChevronRight size={20} />}
-                    </div>
-                  ))}
-                </div>
-              </section>
-            </>
+            <OverviewScreen
+              user={user}
+              role={role}
+              stats={stats}
+              own={own}
+              live={live}
+              visible={visible}
+              events={events}
+              onNavigate={go}
+              onSelectLot={setSelected}
+              onRegisterCatch={() => setCatchForm({})}
+            />
           )}
-          {(page === "auctions" || page === "catches" || page === "won") && (
-            <>
-              <AuctionList
-                lots={
-                  page === "catches"
-                    ? own
-                    : page === "won"
-                      ? won
-                      : lots.filter(
-                          (l) =>
-                            role === "admin" ||
-                            !["pending", "cancelled"].includes(l.status),
-                        )
-                }
-                search={search}
-                setSearch={setSearch}
-                onOpen={setSelected}
-                role={role}
-                type={page}
-              />
-              {page === "catches" && role === "seller" && (
-                <DraftPanel
-                  store={draftStore}
-                  online={online}
-                  allowSetup={online}
-                  authorize={async () => {
-                    const { user: current } = await api("/auth/me");
-                    if (current.id !== user.id || current.role !== "seller")
-                      throw new Error("Sign in again as this seller.");
-                    await verifyDraftOwner(current);
-                  }}
-                  onSync={syncDrafts}
-                  onEdit={setCatchForm}
-                />
-              )}
-            </>
+          {page === "auctions" && (
+            <AuctionsScreen
+              role={role}
+              lots={lots}
+              search={search}
+              setSearch={setSearch}
+              onSelectLot={setSelected}
+            />
+          )}
+          {page === "catches" && (
+            <CatchesScreen
+              user={user}
+              role={role}
+              own={own}
+              search={search}
+              setSearch={setSearch}
+              onSelectLot={setSelected}
+              onRegisterCatch={() => setCatchForm({})}
+              draftStore={draftStore}
+              online={online}
+              verifyDraftOwner={verifyDraftOwner}
+              syncDrafts={syncDrafts}
+              onEditDraft={setCatchForm}
+            />
           )}
           {page === "bids" && (
-            <section className="panel">
-              <div className="section-heading">
-                <div>
-                  <h2>
-                    Your bid history{" "}
-                    <span className="count">{bids.length}</span>
-                  </h2>
-                  <p>Accepted bids are binding and cannot be withdrawn.</p>
-                </div>
-              </div>
-              {bids.length ? (
-                <div className="table-wrap">
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>Auction lot</th>
-                        <th>Round</th>
-                        <th>Your bid / kg</th>
-                        <th>Highest / kg</th>
-                        <th>Position</th>
-                        <th>Placed at</th>
-                        <th />
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {bids.map((b) => (
-                        <tr key={b.id}>
-                          <td>
-                            <strong>{b.species}</strong>
-                            <small>{b.code}</small>
-                          </td>
-                          <td>Round {b.round}</td>
-                          <td>LKR {money(b.amount)}</td>
-                          <td>LKR {money(b.highest_bid)}</td>
-                          <td>
-                            <Badge
-                              status={
-                                b.status === "closed"
-                                  ? b.winner_id === user.id
-                                    ? "won"
-                                    : "closed"
-                                  : b.highest_buyer_id === user.id
-                                    ? "leading"
-                                    : "outbid"
-                              }
-                            >
-                              {b.status === "closed"
-                                ? b.winner_id === user.id
-                                  ? "Won"
-                                  : "Closed"
-                                : b.highest_buyer_id === user.id
-                                  ? "Leading"
-                                  : "Outbid"}
-                            </Badge>
-                          </td>
-                          <td>{date(b.created_at)}</td>
-                          <td>
-                            <button
-                              className="icon-btn"
-                              aria-label={`View ${b.code}`}
-                              onClick={() => setSelected(b.lot_id)}
-                            >
-                              <ArrowUpRight size={18} />
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              ) : (
-                <Empty
-                  icon={Gavel}
-                  title="Your first bid is waiting"
-                  text="Explore auctions and place a bid to get started."
-                />
-              )}
-            </section>
+            <BidsScreen
+              bids={bids}
+              user={user}
+              onSelectLot={setSelected}
+            />
+          )}
+          {page === "won" && (
+            <WonLotsScreen
+              won={won}
+              search={search}
+              setSearch={setSearch}
+              onSelectLot={setSelected}
+              role={role}
+            />
           )}
           {page === "payments" && (
-            <Payments invoices={invoices} role={role} onOpen={setSelected} />
+            <PaymentsScreen
+              invoices={invoices}
+              role={role}
+              onOpen={setSelected}
+            />
           )}
           {page === "users" && (
-            <UserManagement users={users} run={run} busy={busy} />
+            <UsersScreen
+              users={users}
+              run={run}
+              busy={busy}
+            />
           )}
-          {page === "reports" && <Reports lots={lots} invoices={invoices} />}
+          {page === "reports" && (
+            <ReportsScreen
+              lots={lots}
+              invoices={invoices}
+            />
+          )}
           {page === "activity" && (
-            <section className="panel">
-              <div className="section-heading">
-                <div>
-                  <h2>Workspace activity</h2>
-                  <p>Latest 25 events · timestamps shown in Sri Lanka time.</p>
-                </div>
-                <button className="btn secondary" onClick={refresh}>
-                  <RefreshCw size={15} />
-                  Refresh
-                </button>
-              </div>
-              <ActivityList events={events} />
-            </section>
+            <ActivityScreen
+              events={events}
+              onRefresh={refresh}
+              role={role}
+            />
           )}
           {page === "settings" && (
-            <SettingsPage user={user} onUser={setUser} run={run} busy={busy} />
+            <SettingsScreen
+              user={user}
+              onUser={setUser}
+              run={run}
+              busy={busy}
+            />
           )}
           <footer className="app-footer">
             <span>
@@ -1354,783 +875,10 @@ export default function App() {
                 : "Connecting…"}
             </span>
           </footer>
-        </main>
-      </div>
-      {selected && (
-        <LotModal
-          id={selected}
-          user={user}
-          close={() => setSelected(null)}
-          run={run}
-          busy={busy}
-          onEdit={(l) => {
-            setSelected(null);
-            setCatchForm(l);
-          }}
-          toast={toast}
-          online={online}
-        />
-      )}{" "}
-      {catchForm && (
-        <CatchForm
-          value={catchForm}
-          user={user}
-          busy={busy}
-          run={run}
-          onClose={() => setCatchForm(null)}
-          onDraft={async (d) => {
-            try {
-              await draftStore.save(d);
-              setCatchForm(null);
-              toast("Catch draft saved securely on this device.");
-            } catch (error) {
-              toast(`Draft not saved: ${error.message}`, "error");
-            }
-          }}
-          online={online}
-        />
-      )}{" "}
-      {toastEl}
-    </div>
+    </AppShell>
   );
 }
 
-function LotCard({ lot: l, onOpen }) {
-  const active = l.status === "live" && new Date(l.round_ends_at) > new Date();
-  return (
-    <article className="lot-card">
-      <button
-        className="lot-art"
-        onClick={onOpen}
-        aria-label={`View ${l.species} ${l.code}`}
-      >
-        <FishArt type={l.image_key} />
-        <span className="lot-grade">Grade {l.grade}</span>
-        <span className="lot-status">
-          <Badge
-            status={
-              active ? "live" : l.status === "live" ? "scheduled" : l.status
-            }
-          >
-            {l.status === "live"
-              ? active
-                ? "Live auction"
-                : "Round ended"
-              : l.status === "pending"
-                ? "Awaiting review"
-                : l.status}
-          </Badge>
-        </span>
-      </button>
-      <div className="lot-body">
-        <div className="lot-title">
-          <div>
-            <small>{l.code}</small>
-            <h3>{l.species}</h3>
-          </div>
-          <span className="weight-chip">{money(l.weight)} kg</span>
-        </div>
-        <div className="lot-meta">
-          <span>
-            <Ship size={13} />
-            {l.boat_name}
-          </span>
-          <span>
-            <MapPin size={13} />
-            {l.harbor} harbor
-          </span>
-        </div>
-        <div className="lot-price">
-          <div>
-            <small>{l.highest_bid ? "Highest bid" : "Base price"}</small>
-            <strong>
-              LKR {money(l.highest_bid || l.base_price)}
-              <span>/ kg</span>
-            </strong>
-          </div>
-          <small>
-            {l.bid_count} bids
-            <br />
-            {l.round ? `Round ${l.round} of 3` : "Not started"}
-          </small>
-        </div>
-        <div className="lot-bottom">
-          <span>
-            <Clock size={13} />
-            {l.status === "live" ? (
-              <Timer until={l.round_ends_at} />
-            ) : l.status === "closed" ? (
-              "Auction completed"
-            ) : (
-              `ETA ${date(l.arrival_at, { day: undefined, month: undefined })}`
-            )}
-          </span>
-          <button className="text-btn" onClick={onOpen}>
-            View lot
-            <ArrowRight size={14} />
-          </button>
-        </div>
-      </div>
-    </article>
-  );
-}
-function AuctionList({ lots, search, setSearch, onOpen, role, type }) {
-  const [status, setStatus] = useState("all"),
-    [harbor, setHarbor] = useState("all"),
-    [sort, setSort] = useState("newest");
-  const filtered = lots
-    .filter(
-      (l) =>
-        (status === "all" || l.status === status) &&
-        (harbor === "all" || l.harbor === harbor) &&
-        `${l.species} ${l.code} ${l.boat_name} ${l.seller_name}`
-          .toLowerCase()
-          .includes(search.toLowerCase()),
-    )
-    .sort((a, b) =>
-      sort === "price"
-        ? Number(a.highest_bid || a.base_price) -
-          Number(b.highest_bid || b.base_price)
-        : new Date(b.created_at) - new Date(a.created_at),
-    );
-  return (
-    <>
-      <div className="filters-bar">
-        <div className="search-box">
-          <Search size={17} />
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search fish, lot ID or boat…"
-            aria-label="Search auction lots"
-          />
-        </div>
-        <div className="filter-controls">
-          <div className="select-icon">
-            <MapPin size={15} />
-            <select
-              aria-label="Filter by harbor"
-              value={harbor}
-              onChange={(e) => setHarbor(e.target.value)}
-            >
-              <option value="all">All harbors</option>
-              {[...new Set(lots.map((l) => l.harbor))].sort().map((h) => (
-                <option key={h}>{h}</option>
-              ))}
-            </select>
-          </div>
-          <select
-            aria-label="Sort auctions"
-            value={sort}
-            onChange={(e) => setSort(e.target.value)}
-          >
-            <option value="newest">Newest first</option>
-            <option value="price">Price: low to high</option>
-          </select>
-        </div>
-      </div>
-      <div className="status-tabs">
-        {[
-          "all",
-          ...(role === "admin" || type === "catches" ? ["pending"] : []),
-          "live",
-          "scheduled",
-          "closed",
-          ...(type === "catches" || role === "admin"
-            ? ["unsold", "cancelled"]
-            : []),
-        ].map((s) => (
-          <button
-            className={status === s ? "selected" : ""}
-            key={s}
-            onClick={() => setStatus(s)}
-          >
-            {s === "all"
-              ? "All lots"
-              : s === "pending"
-                ? "Awaiting review"
-                : s[0].toUpperCase() + s.slice(1)}
-            <span>
-              {s === "all"
-                ? lots.length
-                : lots.filter((l) => l.status === s).length}
-            </span>
-          </button>
-        ))}
-      </div>
-      {filtered.length ? (
-        <div className="lot-grid">
-          {filtered.map((l) => (
-            <LotCard key={l.id} lot={l} onOpen={() => onOpen(l.id)} />
-          ))}
-        </div>
-      ) : (
-        <section className="panel">
-          <Empty
-            title="No catches found"
-            text="Try another filter, or check back when new catches arrive."
-          />
-        </section>
-      )}
-    </>
-  );
-}
-function ActivityList({ events }) {
-  return events.length ? (
-    <div className="activity-list">
-      {events.map((e, i) => (
-        <div className="activity-item" key={`${e.created_at}-${i}`}>
-          <span
-            className={`activity-icon ${e.action.includes("Payment") ? "teal" : e.action.includes("closed") ? "blue" : ""}`}
-          >
-            {e.action.includes("Payment") ? (
-              <Wallet size={16} />
-            ) : e.action.includes("Round") ? (
-              <Gavel size={16} />
-            ) : e.action.includes("closed") ? (
-              <CheckCircle2 size={16} />
-            ) : (
-              <Fish size={16} />
-            )}
-          </span>
-          <div>
-            <strong>{e.action}</strong>
-            <p>
-              {e.code && <span>{e.code} · </span>}
-              {e.detail}
-            </p>
-            <small>{date(e.created_at)}</small>
-          </div>
-        </div>
-      ))}
-    </div>
-  ) : (
-    <Empty
-      icon={Activity}
-      title="A fresh start"
-      text="Your workspace activity will appear here."
-    />
-  );
-}
-
-function Payments({ invoices, role, onOpen }) {
-  const [filter, setFilter] = useState("all");
-  const shown = invoices.filter(
-    (l) => filter === "all" || l.payment_status === filter,
-  );
-  return (
-    <>
-      <div className="stats-grid three">
-        <div className="stat-card">
-          <span className="muted">Total invoice value</span>
-          <strong>
-            LKR {money(invoices.reduce((n, l) => n + Number(l.final_price), 0))}
-          </strong>
-          <small>Recorded auction sales</small>
-        </div>
-        <div className="stat-card">
-          <span className="muted">Payments recorded</span>
-          <strong>
-            LKR {money(invoices.reduce((n, l) => n + Number(l.paid_amount), 0))}
-          </strong>
-          <small>Cash and bank references</small>
-        </div>
-        <div className="stat-card">
-          <span className="muted">Outstanding balance</span>
-          <strong>
-            LKR {money(invoices.reduce((n, l) => n + Number(l.balance), 0))}
-          </strong>
-          <small>Awaiting buyer payment</small>
-        </div>
-      </div>
-      <section className="panel">
-        <div className="section-heading">
-          <div>
-            <h2>Auction invoices</h2>
-            <p>
-              {role === "admin"
-                ? "Select an invoice to record a received payment."
-                : "Payments are confirmed and recorded by the auction manager."}
-            </p>
-          </div>
-          <select
-            aria-label="Filter invoices"
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-          >
-            {["all", "Pending", "Partially Paid", "Paid", "Overdue"].map(
-              (s) => (
-                <option key={s} value={s}>
-                  {s === "all" ? "All payments" : s}
-                </option>
-              ),
-            )}
-          </select>
-        </div>
-        {shown.length ? (
-          <div className="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Invoice / lot</th>
-                  <th>Buyer</th>
-                  <th>Total</th>
-                  <th>Paid</th>
-                  <th>Balance</th>
-                  <th>Status</th>
-                  <th />
-                </tr>
-              </thead>
-              <tbody>
-                {shown.map((l) => (
-                  <tr key={l.id}>
-                    <td>
-                      <strong>{l.code}</strong>
-                      <small>{l.species}</small>
-                    </td>
-                    <td>{l.winner_name}</td>
-                    <td>
-                      LKR {money(l.final_price)}
-                      <small>Commission: {money(l.commission)}</small>
-                    </td>
-                    <td>{money(l.paid_amount)}</td>
-                    <td>{money(l.balance)}</td>
-                    <td>
-                      <Badge status={l.payment_status} />
-                    </td>
-                    <td>
-                      <button className="text-btn" onClick={() => onOpen(l.id)}>
-                        Details
-                        <ArrowUpRight size={14} />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <Empty
-            icon={Wallet}
-            title="No matching invoices"
-            text="Completed sales and their payment records will appear here."
-          />
-        )}
-      </section>
-    </>
-  );
-}
-function UserManagement({ users, run, busy }) {
-  const [search, setSearch] = useState("");
-  return (
-    <section className="panel">
-      <div className="section-heading">
-        <div>
-          <h2>
-            Your harbor community <span className="count">{users.length}</span>
-          </h2>
-          <p>Only verified Buyers can participate in bidding.</p>
-        </div>
-        <div className="search-box">
-          <Search size={16} />
-          <input
-            aria-label="Search users"
-            placeholder="Find a user…"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
-      </div>
-      <div className="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Role</th>
-              <th>Phone</th>
-              <th>Verification</th>
-              <th>Account</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {users
-              .filter((u) =>
-                `${u.name} ${u.email}`
-                  .toLowerCase()
-                  .includes(search.toLowerCase()),
-              )
-              .map((u) => (
-                <tr key={u.id}>
-                  <td>
-                    <div className="user-cell">
-                      <span className="avatar small">{initials(u.name)}</span>
-                      <div>
-                        <strong>{u.name}</strong>
-                        <small>{u.email}</small>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="capitalize">{rolesLabel[u.role]}</td>
-                  <td>{u.phone || "—"}</td>
-                  <td>
-                    <Badge status={u.verified ? "verified" : "pending"}>
-                      {u.verified ? "Verified" : "Unverified"}
-                    </Badge>
-                  </td>
-                  <td>
-                    <Badge status={u.active ? "active" : "cancelled"}>
-                      {u.active ? "Active" : "Disabled"}
-                    </Badge>
-                  </td>
-                  <td>
-                    <div className="table-actions">
-                      {u.role === "buyer" && !u.verified && (
-                        <button
-                          className="btn tiny primary"
-                          disabled={busy}
-                          onClick={() =>
-                            run(
-                              () =>
-                                api(`/users/${u.id}`, {
-                                  method: "PATCH",
-                                  body: { verified: true },
-                                }),
-                              "Buyer verified.",
-                            )
-                          }
-                        >
-                          Verify
-                        </button>
-                      )}
-                      {u.role !== "admin" && (
-                        <button
-                          className={`btn tiny ${u.active ? "secondary" : "primary"}`}
-                          disabled={busy}
-                          onClick={() =>
-                            run(
-                              () =>
-                                api(`/users/${u.id}`, {
-                                  method: "PATCH",
-                                  body: { active: !u.active },
-                                }),
-                              `Account ${u.active ? "disabled" : "enabled"}.`,
-                            )
-                          }
-                        >
-                          {u.active ? "Disable" : "Enable"}
-                        </button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-          </tbody>
-        </table>
-      </div>
-    </section>
-  );
-}
-function Reports({ lots, invoices }) {
-  const completed = lots.filter((l) => l.status === "closed"),
-    total = completed.reduce((n, l) => n + Number(l.final_price), 0),
-    species = [...new Set(lots.map((l) => l.species))],
-    harbors = [...new Set(lots.map((l) => l.harbor))];
-  return (
-    <>
-      <div className="stats-grid three">
-        {[
-          ["Auction turnover", total, "LKR"],
-          [
-            "Harbor commission",
-            completed.reduce((n, l) => n + Number(l.commission), 0),
-            "LKR",
-          ],
-          [
-            "Fish sold",
-            completed.reduce((n, l) => n + Number(l.actual_weight), 0),
-            "kg",
-          ],
-        ].map(([name, value, unit]) => (
-          <div className="stat-card" key={name}>
-            <span className="muted">{name}</span>
-            <strong>
-              {unit === "LKR" ? "LKR " : ""}
-              {money(value)}
-              {unit === "kg" ? " kg" : ""}
-            </strong>
-            <small>Across {completed.length} completed auctions</small>
-          </div>
-        ))}
-      </div>
-      <div className="reports-grid">
-        <section className="panel">
-          <div className="section-heading">
-            <div>
-              <h2>Catch volume by species</h2>
-              <p>All registered catches · kilograms</p>
-            </div>
-            <Fish size={20} />
-          </div>
-          <div className="bar-chart">
-            {species.map((s) => {
-              const weight = lots
-                  .filter((l) => l.species === s)
-                  .reduce((n, l) => n + Number(l.weight), 0),
-                max = Math.max(
-                  ...species.map((s) =>
-                    lots
-                      .filter((l) => l.species === s)
-                      .reduce((n, l) => n + Number(l.weight), 0),
-                  ),
-                  1,
-                );
-              return (
-                <div className="bar-row" key={s}>
-                  <div>
-                    <span>{s}</span>
-                    <strong>{money(weight)} kg</strong>
-                  </div>
-                  <div className="bar-track">
-                    <span style={{ width: `${(weight / max) * 100}%` }} />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </section>
-        <section className="panel">
-          <div className="section-heading">
-            <div>
-              <h2>Harbor summary</h2>
-              <p>Recorded sales across locations</p>
-            </div>
-            <MapPin size={20} />
-          </div>
-          {harbors.map((h) => (
-            <div className="harbor-row" key={h}>
-              <span className="stat-icon teal">
-                <Anchor size={18} />
-              </span>
-              <div>
-                <strong>{h}</strong>
-                <small>
-                  {lots.filter((l) => l.harbor === h).length} lots registered
-                </small>
-              </div>
-              <strong>
-                LKR{" "}
-                {money(
-                  lots
-                    .filter((l) => l.harbor === h)
-                    .reduce((n, l) => n + Number(l.final_price || 0), 0),
-                )}
-              </strong>
-            </div>
-          ))}
-        </section>
-      </div>
-      <div className="alert">
-        <FileText size={20} />
-        <span>
-          Export includes catch weights, harbor, sale price, commission, payment
-          status, and winners. Confirm the Fisheries Department’s required
-          format before official submission.
-        </span>
-        <a href="/api/reports/export" className="text-btn">
-          Download CSV
-          <Download size={15} />
-        </a>
-      </div>
-    </>
-  );
-}
-function SettingsPage({ user, onUser, run, busy }) {
-  return (
-    <div className="settings-grid">
-      <form
-        className="panel form-panel"
-        onSubmit={async (e) => {
-          e.preventDefault();
-          const f = new FormData(e.currentTarget);
-          await run(async () => {
-            const d = await api("/auth/profile", {
-              method: "PATCH",
-              body: {
-                name: f.get("name"),
-                phone: f.get("phone"),
-                boat_name: f.get("boat_name") || "",
-              },
-            });
-            onUser(d.user);
-          }, "Your profile was updated.");
-        }}
-      >
-        <div className="section-heading">
-          <div>
-            <h2>Account profile</h2>
-            <p>Your details in the harbor community.</p>
-          </div>
-          <UserRound size={20} />
-        </div>
-        <div className="profile-summary">
-          <span className="avatar big">{initials(user.name)}</span>
-          <div>
-            <strong>{user.name}</strong>
-            <small>
-              {rolesLabel[user.role]} ·{" "}
-              {user.verified ? "Verified" : "Awaiting verification"}
-            </small>
-          </div>
-        </div>
-        <label>
-          Full name
-          <input name="name" defaultValue={user.name} required minLength={2} />
-        </label>
-        <label>
-          Email address
-          <input value={user.email} disabled />
-          <small>Email changes require manager assistance.</small>
-        </label>
-        <label>
-          Phone number
-          <input
-            name="phone"
-            defaultValue={user.phone}
-            type="tel"
-            maxLength={30}
-          />
-        </label>
-        {user.role === "seller" && (
-          <label>
-            Boat name
-            <input
-              name="boat_name"
-              defaultValue={user.boat_name}
-              maxLength={100}
-            />
-          </label>
-        )}
-        <button className="btn primary" disabled={busy}>
-          Save changes
-          <Check size={15} />
-        </button>
-      </form>
-      <section className="panel rules-panel">
-        <div className="section-heading">
-          <div>
-            <h2>Auction rules</h2>
-            <p>A clear process. A fair outcome.</p>
-          </div>
-          <ShieldCheck size={20} />
-        </div>
-        {[
-          [
-            "Prices are per kilogram",
-            "The first bid must meet the base price. Later bids must meet the highest bid plus the lot’s minimum increment.",
-          ],
-          [
-            "Up to three rounds",
-            "Verified Buyers may join any active round. Only the Auction Manager can start, end, or close auctions.",
-          ],
-          [
-            "Server order decides equal bids",
-            "The first valid bid committed by the server is accepted. Equal subsequent bids are rejected. Device clocks are not used.",
-          ],
-          [
-            "Verify the catch before final sale",
-            "The manager confirms arrival and inspected weight. A weight different from the advertised catch requires cancellation and relisting.",
-          ],
-          [
-            "Offline drafts, online bidding",
-            "Catch drafts can be saved on this device. Bids require a connection and server confirmation; they are never queued offline.",
-          ],
-          [
-            "Payments and commission",
-            "The manager records received payments and references. The configured harbor commission is deducted from seller proceeds. No online payment gateway is included.",
-          ],
-        ].map(([title, text], i) => (
-          <div className="rule" key={title}>
-            <span>{String(i + 1).padStart(2, "0")}</span>
-            <div>
-              <strong>{title}</strong>
-              <p>{text}</p>
-            </div>
-          </div>
-        ))}
-      </section>
-    </div>
-  );
-}
-
-function Modal({ title, subtitle, close, children, wide = false }) {
-  const dialog = useRef(null);
-  const closeRef = useRef(close);
-  closeRef.current = close;
-  useEffect(() => {
-    const original = document.body.style.overflow;
-    const previousFocus = document.activeElement;
-    document.body.style.overflow = "hidden";
-    dialog.current?.querySelector("button")?.focus();
-    const key = (e) => {
-      if (e.key === "Escape") closeRef.current();
-      if (e.key === "Tab") {
-        const controls = [
-          ...dialog.current.querySelectorAll(
-            "button:not(:disabled),a[href],input:not(:disabled),select:not(:disabled),textarea:not(:disabled)",
-          ),
-        ].filter((el) => el.getClientRects().length);
-        const first = controls[0],
-          last = controls.at(-1);
-        if (e.shiftKey && document.activeElement === first) {
-          e.preventDefault();
-          last?.focus();
-        }
-        if (!e.shiftKey && document.activeElement === last) {
-          e.preventDefault();
-          first?.focus();
-        }
-      }
-    };
-    window.addEventListener("keydown", key);
-    return () => {
-      document.body.style.overflow = original;
-      window.removeEventListener("keydown", key);
-      previousFocus?.focus();
-    };
-  }, []);
-  return (
-    <div
-      className="modal-backdrop"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) close();
-      }}
-    >
-      <section
-        ref={dialog}
-        className={`modal ${wide ? "wide" : ""}`}
-        role="dialog"
-        aria-modal="true"
-        aria-label={title}
-      >
-        <header className="modal-header">
-          <div>
-            <h2>{title}</h2>
-            {subtitle && <p>{subtitle}</p>}
-          </div>
-          <button
-            className="icon-btn"
-            onClick={close}
-            aria-label="Close dialog"
-          >
-            <X size={21} />
-          </button>
-        </header>
-        {children}
-      </section>
-    </div>
-  );
-}
 function CatchForm({ value, user, onClose, run, busy, onDraft, online }) {
   const edit = Boolean(value.id);
   const initialArrival = new Date(value.arrival_at || Date.now() + 2 * 3600000);
