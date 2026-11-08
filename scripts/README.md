@@ -53,3 +53,17 @@ This directory contains standalone automated verification scripts for HarborX fr
   node scripts/verify-sidebar-typography.mjs
   ```
 - **Expected Result**: Inspects live computed CSS styles for navigation labels, section headings, and badges, verifies collapse/expand mechanics, tests mobile drawer open/close, and exits with code `0`.
+
+---
+
+## 5. `verify-global-localization.mjs`
+
+- **Purpose**: End-to-end browser verification of the complete trilingual user journey across multiple views and dialogs (Auth eyebrow, Tamil login, demo ribbon, Overview hero banner, Catch Registration 3-step modal, Topbar switch to Sinhala, Auctions screen, Lot Details modal, and page reload persistence).
+- **Prerequisites**: Playwright, with the HarborX frontend running.
+- **Execution Command**:
+  ```bash
+  node scripts/verify-global-localization.mjs
+  # Or with custom base URL:
+  BASE_URL=http://localhost:5173 node scripts/verify-global-localization.mjs
+  ```
+- **Expected Result**: Verifies Tamil and Sinhala localized strings across auth, overview hero, catch registration modal, auctions, and details tabs, confirms reload persistence, and exits with code `0`.
