@@ -1,0 +1,176 @@
+/**
+ * HarborX CSS Design Tokens
+ *
+ * Implements maintainable CSS Custom Properties covering colors, typography,
+ * spacing, radii, shadows, z-index, and interaction states.
+ * Fully backward-compatible with legacy HarborX CSS variables.
+ */
+
+:root {
+  /* --- Colors: Brand Navy (Deep Maritime Theme) --- */
+  --hx-color-navy-900: #081f35;
+  --hx-color-navy-800: #0a2c4b;
+  --hx-color-navy-700: #0d3558;
+  --hx-color-navy-600: #19374d;
+  --hx-color-navy-500: #20384c;
+  --hx-color-navy-400: #445f72;
+  --hx-color-navy-300: #7a8997;
+  --hx-color-navy-200: #9ba8b1;
+  --hx-color-navy-100: #dce5eb;
+  --hx-color-navy-50: #f5f7f9;
+
+  /* --- Colors: Coastal Teal (Interactive & Action Identity) --- */
+  --hx-color-teal-800: #075a61;
+  --hx-color-teal-700: #08727a;
+  --hx-color-teal-600: #10858c;
+  --hx-color-teal-500: #1ca6a7;
+  --hx-color-teal-400: #42bdbb;
+  --hx-color-teal-300: #86d2cb;
+  --hx-color-teal-200: #b5d7da;
+  --hx-color-teal-100: #d9efec;
+  --hx-color-teal-50: #e7f5f3;
+
+  /* --- Semantic Colors: Surfaces & Canvases --- */
+  --hx-color-canvas: var(--hx-color-navy-50);
+  --hx-color-surface: #ffffff;
+  --hx-color-surface-subtle: #f8fafb;
+  --hx-color-surface-muted: #eef2f5;
+  --hx-color-surface-inverse: var(--hx-color-navy-700);
+
+  /* --- Semantic Colors: Primary / Secondary Actions --- */
+  --hx-color-primary: var(--hx-color-teal-600);
+  --hx-color-primary-hover: var(--hx-color-teal-700);
+  --hx-color-primary-active: var(--hx-color-teal-800);
+  --hx-color-secondary: var(--hx-color-surface);
+  --hx-color-secondary-hover: #f5f9fa;
+  --hx-color-secondary-text: #476071;
+
+  /* --- Semantic Colors: Text Hierarchy --- */
+  --hx-color-text-primary: var(--hx-color-navy-500);
+  --hx-color-text-heading: var(--hx-color-navy-600);
+  --hx-color-text-secondary: #476071;
+  --hx-color-text-muted: var(--hx-color-navy-300);
+  --hx-color-text-subtle: #98a5af;
+  --hx-color-text-inverse: #ffffff;
+  --hx-color-text-inverse-muted: #a1b9cc;
+
+  /* --- Semantic Colors: Borders --- */
+  --hx-color-border-default: #e5ebef;
+  --hx-color-border-subtle: #edf1f4;
+  --hx-color-border-strong: var(--hx-color-navy-100);
+  --hx-color-border-focus: var(--hx-color-teal-600);
+
+  /* --- Semantic Colors: Status & Feedback --- */
+  /* Success: Live, Active, Verified, Paid, Won */
+  --hx-color-success: #21976a;
+  --hx-color-success-bg: #e0f4eb;
+  --hx-color-success-border: #bfe5d6;
+
+  /* Warning: Pending, Partially Paid, Warning alerts */
+  --hx-color-warning: #b48731;
+  --hx-color-warning-bg: #fff2d9;
+  --hx-color-warning-border: #f4e6bf;
+
+  /* Danger: Overdue, Cancelled, Outbid, Errors */
+  --hx-color-danger: #c25f59;
+  --hx-color-danger-bg: #fce9e8;
+  --hx-color-danger-border: #f0cccc;
+  --hx-color-danger-solid: #ba4f4f;
+
+  /* Info: Scheduled, Closed, Notice */
+  --hx-color-info: #427ca9;
+  --hx-color-info-bg: #e7f0f9;
+  --hx-color-info-border: #cddff0;
+
+  /* --- Typography Scale --- */
+  --hx-font-family:
+    Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  --hx-font-size-xs: 10px;
+  --hx-font-size-sm: 12px;
+  --hx-font-size-base: 13px;
+  --hx-font-size-md: 14px;
+  --hx-font-size-lg: 15px;
+  --hx-font-size-xl: 16px;
+  --hx-font-size-2xl: 19px;
+  --hx-font-size-3xl: 24px;
+  --hx-font-size-4xl: 27px;
+  --hx-font-size-display: clamp(32px, 3.4vw, 55px);
+
+  --hx-font-weight-regular: 400;
+  --hx-font-weight-medium: 500;
+  --hx-font-weight-semibold: 600;
+  --hx-font-weight-bold: 700;
+
+  --hx-line-height-tight: 1.2;
+  --hx-line-height-normal: 1.5;
+  --hx-line-height-relaxed: 1.7;
+  --hx-line-height-loose: 1.9;
+
+  --hx-letter-spacing-tight: -0.025em;
+  --hx-letter-spacing-normal: 0;
+  --hx-letter-spacing-wide: 1.5px;
+  --hx-letter-spacing-eyebrow: 1.8px;
+
+  /* --- Spacing Scale --- */
+  --hx-spacing-0: 0px;
+  --hx-spacing-1: 4px;
+  --hx-spacing-2: 8px;
+  --hx-spacing-3: 12px;
+  --hx-spacing-4: 16px;
+  --hx-spacing-5: 20px;
+  --hx-spacing-6: 24px;
+  --hx-spacing-7: 28px;
+  --hx-spacing-8: 32px;
+  --hx-spacing-10: 40px;
+  --hx-spacing-12: 48px;
+  --hx-spacing-16: 64px;
+
+  /* --- Border Radii --- */
+  --hx-radius-none: 0px;
+  --hx-radius-xs: 4px;
+  --hx-radius-sm: 7px;
+  --hx-radius-md: 9px;
+  --hx-radius-lg: 10px;
+  --hx-radius-xl: 13px;
+  --hx-radius-full: 9999px;
+
+  /* --- Shadows --- */
+  --hx-shadow-none: none;
+  --hx-shadow-sm: 0 1px 2px rgba(13, 53, 88, 0.05);
+  --hx-shadow-md: 0 4px 12px rgba(13, 53, 88, 0.08);
+  --hx-shadow-lg: 0 10px 30px rgba(13, 53, 88, 0.12);
+  --hx-shadow-toast: 0 10px 50px rgba(13, 53, 88, 0.16);
+  --hx-shadow-modal: 0 25px 100px rgba(0, 21, 43, 0.23);
+  --hx-shadow-focus: 0 0 0 3px rgba(16, 133, 140, 0.15);
+
+  /* --- Focus & Interaction States --- */
+  --hx-focus-ring-color: #42bdbb;
+  --hx-focus-ring-shadow: 0 0 0 3px rgba(16, 133, 140, 0.15);
+  --hx-focus-ring-offset: 3px;
+  --hx-transition-fast: 0.15s ease;
+  --hx-transition-normal: 0.2s ease;
+
+  /* --- Z-Index Scale --- */
+  --hx-z-hide: -1;
+  --hx-z-base: 0;
+  --hx-z-dropdown: 10;
+  --hx-z-sticky: 20;
+  --hx-z-sidebar: 30;
+  --hx-z-scrim: 40;
+  --hx-z-modal: 50;
+  --hx-z-toast: 100;
+
+  /* --- Backward-Compatibility Aliases ---
+     Maps legacy HarborX custom properties to the new design tokens
+     so existing CSS rules continue functioning without any changes. */
+  --navy: var(--hx-color-navy-700);
+  --navy-deep: var(--hx-color-navy-800);
+  --teal: var(--hx-color-teal-600);
+  --teal-dark: var(--hx-color-teal-700);
+  --aqua: var(--hx-color-teal-50);
+  --border: var(--hx-color-border-default);
+  --muted: var(--hx-color-text-muted);
+  --bg: var(--hx-color-canvas);
+  --ink: var(--hx-color-text-primary);
+}
