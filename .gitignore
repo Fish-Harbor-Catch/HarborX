@@ -162,6 +162,9 @@ data/
 *.db
 *.sqlite
 
+# Local PostgreSQL database files
+/backend/data/postgres/
+
 # IDE & Editor files
 .idea/
 .vscode/
