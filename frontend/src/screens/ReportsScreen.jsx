@@ -8,6 +8,7 @@ import {
 } from "../components/ui/PageContainer.jsx";
 import { Card, CardHeader } from "../components/ui/Card.jsx";
 import { money } from "../api.js";
+import { useLanguage } from "../i18n.jsx";
 
 /**
  * Screen 7: Modernized Reports and Analytics Screen.
@@ -15,6 +16,8 @@ import { money } from "../api.js";
  * harbor sales summaries, and compliance CSV export.
  */
 export function ReportsScreen({ lots = [], invoices = [] }) {
+  const { lang, t } = useLanguage();
+
   const completed = lots.filter((l) => l.status === "closed");
   const total = completed.reduce((n, l) => n + Number(l.final_price || 0), 0);
   const totalCommission = completed.reduce(
@@ -32,35 +35,35 @@ export function ReportsScreen({ lots = [], invoices = [] }) {
     <>
       <PageHeader>
         <PageTitle
-          eyebrow="HARBOR OPERATIONS"
-          description="Turn your auction records into useful insights."
+          eyebrow={t("reports_eyebrow", "HARBOR OPERATIONS")}
+          description={t("reports_desc", "Turn your auction records into useful insights.")}
         >
-          Reports
+          {t("reports_title", "Reports")}
         </PageTitle>
 
         <PageActions>
           <a className="btn primary" href="/api/reports/export">
             <Download size={17} aria-hidden="true" />
-            Export CSV
+            {t("action_export_csv", "Export CSV")}
           </a>
         </PageActions>
       </PageHeader>
 
       <div className="stats-grid three" aria-label="Auction summary metrics">
         <Card variant="stat">
-          <span className="muted">Auction turnover</span>
+          <span className="muted">{t("reports_stat_turnover", "Auction turnover")}</span>
           <strong>LKR {money(total)}</strong>
-          <small>Across {completed.length} completed auctions</small>
+          <small>{t("reports_stat_turnover_sub", `Across ${completed.length} completed auctions`, { count: completed.length })}</small>
         </Card>
         <Card variant="stat">
-          <span className="muted">Harbor commission</span>
+          <span className="muted">{t("reports_stat_commission", "Harbor commission")}</span>
           <strong>LKR {money(totalCommission)}</strong>
-          <small>Across {completed.length} completed auctions</small>
+          <small>{t("reports_stat_commission_sub", `Across ${completed.length} completed auctions`, { count: completed.length })}</small>
         </Card>
         <Card variant="stat">
-          <span className="muted">Fish sold</span>
+          <span className="muted">{t("reports_stat_weight", "Fish sold")}</span>
           <strong>{money(totalWeight)} kg</strong>
-          <small>Across {completed.length} completed auctions</small>
+          <small>{t("reports_stat_weight_sub", `Across ${completed.length} completed auctions`, { count: completed.length })}</small>
         </Card>
       </div>
 
@@ -68,8 +71,8 @@ export function ReportsScreen({ lots = [], invoices = [] }) {
         <Card>
           <CardHeader>
             <div>
-              <h2>Catch volume by species</h2>
-              <p>All registered catches · kilograms</p>
+              <h2>{t("reports_chart_volume_title", "Catch volume by species")}</h2>
+              <p>{t("reports_chart_volume_sub", "All registered catches · kilograms")}</p>
             </div>
             <Fish size={20} aria-hidden="true" />
           </CardHeader>
@@ -88,10 +91,13 @@ export function ReportsScreen({ lots = [], invoices = [] }) {
               );
               const percentage = Math.round((weight / max) * 100);
 
+              const speciesKey = s?.toLowerCase().replace(/\s+/g, "_");
+              const speciesLabel = (speciesKey && t(`species_${speciesKey}`, null)) || s;
+
               return (
                 <div className="bar-row" key={s}>
                   <div>
-                    <span>{s}</span>
+                    <span>{speciesLabel}</span>
                     <strong>{money(weight)} kg</strong>
                   </div>
                   <div className="bar-track">
@@ -106,8 +112,8 @@ export function ReportsScreen({ lots = [], invoices = [] }) {
         <Card>
           <CardHeader>
             <div>
-              <h2>Harbor summary</h2>
-              <p>Recorded sales across locations</p>
+              <h2>{t("reports_summary_title", "Harbor summary")}</h2>
+              <p>{t("reports_summary_sub", "Recorded sales across locations")}</p>
             </div>
             <MapPin size={20} aria-hidden="true" />
           </CardHeader>
@@ -119,14 +125,17 @@ export function ReportsScreen({ lots = [], invoices = [] }) {
                 0,
               );
 
+              const harborKey = h?.toLowerCase().replace(/\s+/g, "_");
+              const harborLabel = (harborKey && t(`harbor_${harborKey}`, null)) || h;
+
               return (
                 <div className="harbor-row" key={h}>
                   <span className="stat-icon teal">
                     <Anchor size={18} aria-hidden="true" />
                   </span>
                   <div>
-                    <strong>{h}</strong>
-                    <small>{harborLots.length} lots registered</small>
+                    <strong>{harborLabel}</strong>
+                    <small>{t("overview_pipeline_auction_lots", `${harborLots.length} lots registered`, { count: harborLots.length })}</small>
                   </div>
                   <strong>LKR {money(harborSales)}</strong>
                 </div>
@@ -139,12 +148,10 @@ export function ReportsScreen({ lots = [], invoices = [] }) {
       <div className="alert" role="status">
         <FileText size={20} aria-hidden="true" />
         <span>
-          Export includes catch weights, harbor, sale price, commission, payment
-          status, and winners. Confirm the Fisheries Department’s required
-          format before official submission.
+          {t("reports_compliance_notice", "Export includes catch weights, harbor, sale price, commission, payment status, and winners. Confirm the Fisheries Department’s required format before official submission.")}
         </span>
         <a href="/api/reports/export" className="text-btn">
-          Download CSV
+          {t("action_export_csv", "Download CSV")}
           <Download size={15} aria-hidden="true" />
         </a>
       </div>

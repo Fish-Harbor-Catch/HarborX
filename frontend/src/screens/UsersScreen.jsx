@@ -11,6 +11,7 @@ import { Button } from "../components/ui/Button.jsx";
 import { EmptyState } from "../components/ui/EmptyState.jsx";
 import { api, initials } from "../api.js";
 import { ROLES_LABEL } from "../components/layout/nav-config.js";
+import { useLanguage } from "../i18n.jsx";
 
 /**
  * Screen 6: Modernized User Management Screen (Admin).
@@ -18,6 +19,7 @@ import { ROLES_LABEL } from "../components/layout/nav-config.js";
  * and handles active/disabled account states.
  */
 export function UsersScreen({ users = [], run, busy = false }) {
+  const { lang, t } = useLanguage();
   const [search, setSearch] = useState("");
 
   const filteredUsers = users.filter((u) =>
@@ -28,10 +30,10 @@ export function UsersScreen({ users = [], run, busy = false }) {
     <>
       <PageHeader>
         <PageTitle
-          eyebrow="HARBOR OPERATIONS"
-          description="Manage access and verify your harbor community."
+          eyebrow={t("users_eyebrow", "HARBOR OPERATIONS")}
+          description={t("users_desc", "Manage access and verify your harbor community.")}
         >
-          User management
+          {t("users_title", "User management")}
         </PageTitle>
       </PageHeader>
 
@@ -39,15 +41,15 @@ export function UsersScreen({ users = [], run, busy = false }) {
         <CardHeader>
           <div>
             <h2>
-              Your harbor community <span className="count">{users.length}</span>
+              {t("users_heading", "Your harbor community")} <span className="count">{users.length}</span>
             </h2>
-            <p>Only verified Buyers can participate in bidding.</p>
+            <p>{t("users_heading_sub", "Only verified Buyers can participate in bidding.")}</p>
           </div>
           <div className="search-box">
             <Search size={16} aria-hidden="true" />
             <input
-              aria-label="Search users"
-              placeholder="Find a user…"
+              aria-label={t("users_search_placeholder", "Search users")}
+              placeholder={t("users_search_placeholder", "Find a user…")}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
@@ -59,12 +61,12 @@ export function UsersScreen({ users = [], run, busy = false }) {
             <table>
               <thead>
                 <tr>
-                  <th scope="col">Name</th>
-                  <th scope="col">Role</th>
-                  <th scope="col">Phone</th>
-                  <th scope="col">Verification</th>
-                  <th scope="col">Account</th>
-                  <th scope="col">Action</th>
+                  <th scope="col">{t("users_th_name", "Name")}</th>
+                  <th scope="col">{t("users_th_role", "Role")}</th>
+                  <th scope="col">{t("users_th_phone", "Phone")}</th>
+                  <th scope="col">{t("users_th_verification", "Verification")}</th>
+                  <th scope="col">{t("users_th_account", "Account")}</th>
+                  <th scope="col">{t("users_th_action", "Action")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -82,17 +84,17 @@ export function UsersScreen({ users = [], run, busy = false }) {
                       </div>
                     </td>
                     <td className="capitalize">
-                      {ROLES_LABEL[u.role] || u.role}
+                      {lang !== "en" ? t(`role_${u.role}`, ROLES_LABEL[u.role] || u.role) : (ROLES_LABEL[u.role] || u.role)}
                     </td>
                     <td>{u.phone || "—"}</td>
                     <td>
                       <Badge status={u.verified ? "verified" : "pending"}>
-                        {u.verified ? "Verified" : "Unverified"}
+                        {u.verified ? t("status_verified", "Verified") : t("status_unverified", "Unverified")}
                       </Badge>
                     </td>
                     <td>
                       <Badge status={u.active ? "active" : "cancelled"}>
-                        {u.active ? "Active" : "Disabled"}
+                        {u.active ? t("status_active", "Active") : t("status_disabled", "Disabled")}
                       </Badge>
                     </td>
                     <td>
@@ -109,11 +111,11 @@ export function UsersScreen({ users = [], run, busy = false }) {
                                     method: "PATCH",
                                     body: { verified: true },
                                   }),
-                                "Buyer verified.",
+                                t("user_verified_toast", "Buyer verified."),
                               )
                             }
                           >
-                            Verify
+                            {t("action_verify", "Verify")}
                           </Button>
                         )}
                         {u.role !== "admin" && (
@@ -128,11 +130,11 @@ export function UsersScreen({ users = [], run, busy = false }) {
                                     method: "PATCH",
                                     body: { active: !u.active },
                                   }),
-                                `Account ${u.active ? "disabled" : "enabled"}.`,
+                                t("user_account_status_toast", `Account ${u.active ? "disabled" : "enabled"}.`, { status: u.active ? "disabled" : "enabled" }),
                               )
                             }
                           >
-                            {u.active ? "Disable" : "Enable"}
+                            {u.active ? t("action_disable", "Disable") : t("action_enable", "Enable")}
                           </Button>
                         )}
                       </div>
@@ -145,8 +147,8 @@ export function UsersScreen({ users = [], run, busy = false }) {
         ) : (
           <EmptyState
             icon={Users}
-            title="No users found"
-            text="Try another search term or check back later."
+            title={t("users_empty_title", "No users match your search")}
+            text={t("users_empty_desc", "Try searching with a different name or email address.")}
           />
         )}
       </Card>

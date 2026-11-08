@@ -5,6 +5,7 @@ import {
   PageDescription,
 } from "../components/ui/PageContainer.jsx";
 import { AuctionList } from "../components/domain/index.js";
+import { useLanguage } from "../i18n.jsx";
 
 /**
  * Screen 4b: Modernized Buyer Won Lots Screen.
@@ -18,14 +19,16 @@ export function WonLotsScreen({
   onSelectLot,
   role = "buyer",
 }) {
+  const { lang, t } = useLanguage();
+
   return (
     <>
       <PageHeader>
         <PageTitle
-          eyebrow="FRESH OPPORTUNITIES, FAIR PRICES"
-          description="Your successful bids, ready for the next step."
+          eyebrow={t("won_eyebrow", "FRESH OPPORTUNITIES, FAIR PRICES")}
+          description={t("won_desc", "Your successful bids, ready for the next step.")}
         >
-          Won lots
+          {t("won_title", "Won lots")}
         </PageTitle>
       </PageHeader>
 

@@ -7,6 +7,7 @@ import {
   PageActions,
 } from "../components/ui/PageContainer.jsx";
 import { AuctionList } from "../components/domain/index.js";
+import { useLanguage } from "../i18n.jsx";
 
 /**
  * Screen 2: Modernized Auctions Screen.
@@ -20,12 +21,14 @@ export function AuctionsScreen({
   setSearch,
   onSelectLot,
 }) {
+  const { lang, t } = useLanguage();
+
   const eyebrow =
     role === "admin"
-      ? "HARBOR OPERATIONS"
+      ? t("overview_eyebrow_admin", "HARBOR OPERATIONS")
       : role === "seller"
-        ? "FROM YOUR BOAT TO THE MARKET"
-        : "FRESH OPPORTUNITIES, FAIR PRICES";
+        ? t("overview_eyebrow_seller", "FROM YOUR BOAT TO THE MARKET")
+        : t("overview_eyebrow_buyer", "FRESH OPPORTUNITIES, FAIR PRICES");
 
   const visibleLots = lots.filter(
     (l) => role === "admin" || !["pending", "cancelled"].includes(l.status),
@@ -36,9 +39,9 @@ export function AuctionsScreen({
       <PageHeader>
         <PageTitle
           eyebrow={eyebrow}
-          description="Explore fresh catches and follow the latest auction activity."
+          description={t("auctions_desc", "Explore fresh catches and follow the latest auction activity.")}
         >
-          Auctions
+          {t("auctions_title", "Auctions")}
         </PageTitle>
 
         <PageActions>

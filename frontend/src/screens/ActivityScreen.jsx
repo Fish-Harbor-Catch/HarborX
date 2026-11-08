@@ -8,6 +8,7 @@ import {
 import { Card, CardHeader } from "../components/ui/Card.jsx";
 import { Button } from "../components/ui/Button.jsx";
 import { ActivityList } from "../components/domain/index.js";
+import { useLanguage } from "../i18n.jsx";
 
 /**
  * Screen 8: Modernized Activity Log Screen.
@@ -15,36 +16,38 @@ import { ActivityList } from "../components/domain/index.js";
  * and user verification actions across the workspace.
  */
 export function ActivityScreen({ events = [], onRefresh, role = "seller" }) {
+  const { lang, t } = useLanguage();
+
   const eyebrow =
     role === "admin"
-      ? "HARBOR OPERATIONS"
+      ? t("overview_eyebrow_admin", "HARBOR OPERATIONS")
       : role === "seller"
-        ? "FROM YOUR BOAT TO THE MARKET"
-        : "FRESH OPPORTUNITIES, FAIR PRICES";
+        ? t("overview_eyebrow_seller", "FROM YOUR BOAT TO THE MARKET")
+        : t("overview_eyebrow_buyer", "FRESH OPPORTUNITIES, FAIR PRICES");
 
   return (
     <>
       <PageHeader>
         <PageTitle
           eyebrow={eyebrow}
-          description="A traceable record of activity across your workspace."
+          description={t("activity_desc", "A traceable record of activity across your workspace.")}
         >
-          Activity log
+          {t("activity_title", "Activity log")}
         </PageTitle>
       </PageHeader>
 
       <Card>
         <CardHeader>
           <div>
-            <h2>Workspace activity</h2>
-            <p>Latest 25 events · timestamps shown in Sri Lanka time.</p>
+            <h2>{t("activity_heading", "Workspace activity")}</h2>
+            <p>{t("activity_heading_sub", "Latest 25 events · timestamps shown in Sri Lanka time.")}</p>
           </div>
           <Button
             variant="secondary"
             onClick={onRefresh}
             icon={<RefreshCw size={15} aria-hidden="true" />}
           >
-            Refresh
+            {t("action_refresh", "Refresh")}
           </Button>
         </CardHeader>
 

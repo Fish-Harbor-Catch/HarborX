@@ -43,8 +43,11 @@ import {
   TrendingUp,
   ArrowLeft,
   LifeBuoy,
+  Phone,
+  Info,
 } from "lucide-react";
 import { api, money, date, initials, createId } from "./api.js";
+import { LanguageProvider, useLanguage, LanguageSwitcher } from "./i18n.jsx";
 import { useDraftVault } from "./useDraftVault.js";
 import { DraftPanel, OfflineWorkspace } from "./DraftPanel.jsx";
 import { AppShell } from "./components/layout/index.js";
@@ -106,6 +109,7 @@ const rolesLabel = {
 };
 
 function Auth({ onLogin, toast, demo }) {
+  const { lang, t } = useLanguage();
   const [register, setRegister] = useState(false),
     [busy, setBusy] = useState(false),
     [email, setEmail] = useState(""),
@@ -146,7 +150,7 @@ function Auth({ onLogin, toast, demo }) {
       <section className="auth-story">
         <Logo light />
         <div className="auth-story-body">
-          <span className="eyebrow light-text">A BETTER DAY AT THE HARBOR</span>
+          <span className="eyebrow light-text">{t("auth_eyebrow", "WELCOME TO HARBORX")}</span>
           <h1>
             Fresh catch.
             <br />
@@ -155,25 +159,25 @@ function Auth({ onLogin, toast, demo }) {
             <em>Connected harbors.</em>
           </h1>
           <p>
-            From the first catch to the final bid. One place for Sri Lanka’s
-            fishing community to trade with confidence.
+            {t("auth_story_desc", "From the first catch to the final bid. One simple digital harbor for Sri Lanka’s fishing communities to trade with confidence.")}
           </p>
           <HarborArt />
           <div className="auth-feature">
             <ShieldCheck size={22} />
             <div>
-              <strong>Every bid. Every catch. Accounted for.</strong>
-              <span>Transparent auctions, from boat to buyer.</span>
+              <strong>{t("auth_feature_trace_title", "Every bid. Every catch. Accounted for.")}</strong>
+              <span>{t("auth_feature_trace_desc", "Transparent auctions, from boat to buyer.")}</span>
             </div>
           </div>
         </div>
-        <small>Built for our coast. Made for our community.</small>
+        <small>{t("auth_community_tagline", "Built for our coast. Made for our community.")}</small>
       </section>
       <section className="auth-form-wrap">
         <div className="auth-top">
-          <span>New to HarborX?</span>
+          <LanguageSwitcher />
+          <span>{register ? t("auth_already_prompt", "Already have an account?") : t("auth_new_prompt", "New to HarborX?")}</span>
           <button className="text-btn" onClick={() => setRegister(!register)}>
-            {register ? "Sign in" : "Create an account"}{" "}
+            {register ? t("action_sign_in", "Sign in") : t("action_create_account", "Create an account")}{" "}
             <ArrowUpRight size={15} />
           </button>
         </div>
@@ -181,50 +185,93 @@ function Auth({ onLogin, toast, demo }) {
           <span className="auth-anchor">
             <Anchor size={27} />
           </span>
-          <span className="eyebrow">WELCOME TO HARBORX</span>
-          <h2>{register ? "Join the harbor community" : "Welcome back."}</h2>
+          <span className="eyebrow">{t("auth_eyebrow", "WELCOME TO HARBORX")}</span>
+          <h2>{register ? t("auth_join", "Join the harbor community") : t("auth_welcome_back", "Welcome back.")}</h2>
           <p>
             {register
-              ? "Create your Seller or Buyer account to get started."
-              : "Sign in to manage your next catch, bid, or auction."}
+              ? t("auth_join_sub", "Create your Seller or Buyer account to get started.")
+              : t("auth_welcome_back_sub", "Sign in to manage your next catch, bid, or auction.")}
           </p>
           {register && (
             <>
               <label>
-                Full name
-                <input
-                  name="name"
-                  required
-                  minLength={2}
-                  placeholder="Your full name"
-                />
+                {t("auth_name_label", "Full name")}
+                <div className="input-icon">
+                  <UserRound size={17} />
+                  <input
+                    name="name"
+                    required
+                    minLength={2}
+                    placeholder={t("auth_name_placeholder", "Your full name")}
+                  />
+                </div>
               </label>
-              <label>
-                I am a
-                <select value={role} onChange={(e) => setRole(e.target.value)}>
-                  <option value="buyer">Buyer — buy fresh catches</option>
-                  <option value="seller">
-                    Seller — register and sell catches
-                  </option>
-                </select>
-              </label>
+
+              <div className="role-selector-field">
+                <span className="field-label-text">
+                  {t("auth_role_prompt", "Choose your harbor role:")}
+                </span>
+                <input type="hidden" name="role" value={role} />
+                <div className="role-cards" role="radiogroup" aria-label="Harbor role">
+                  <button
+                    type="button"
+                    role="radio"
+                    aria-checked={role === "seller"}
+                    className={`role-card ${role === "seller" ? "selected" : ""}`}
+                    onClick={() => setRole("seller")}
+                  >
+                    <div className="role-card-icon seller">
+                      <Ship size={24} aria-hidden="true" />
+                    </div>
+                    <div className="role-card-content">
+                      <strong>{t("auth_role_seller", "Seller / Fisherman")}</strong>
+                      <span>{t("auth_role_seller_desc", "I catch fish or sell my boat's harvest")}</span>
+                    </div>
+                    {role === "seller" && <Check size={18} className="role-card-check" aria-hidden="true" />}
+                  </button>
+
+                  <button
+                    type="button"
+                    role="radio"
+                    aria-checked={role === "buyer"}
+                    className={`role-card ${role === "buyer" ? "selected" : ""}`}
+                    onClick={() => setRole("buyer")}
+                  >
+                    <div className="role-card-icon buyer">
+                      <Fish size={24} aria-hidden="true" />
+                    </div>
+                    <div className="role-card-content">
+                      <strong>{t("auth_role_buyer", "Buyer / Trader")}</strong>
+                      <span>{t("auth_role_buyer_desc", "I bid on catches and buy seafood")}</span>
+                    </div>
+                    {role === "buyer" && <Check size={18} className="role-card-check" aria-hidden="true" />}
+                  </button>
+                </div>
+              </div>
+
               {role === "seller" && (
                 <label>
-                  Boat name
-                  <input
-                    name="boat_name"
-                    placeholder="e.g. Ocean Pearl LK-2048"
-                  />
+                  {t("auth_boat_label", "Boat name / registration")}
+                  <div className="input-icon">
+                    <Ship size={17} />
+                    <input
+                      name="boat_name"
+                      placeholder={t("auth_boat_placeholder", "e.g. Ocean Pearl LK-2048")}
+                    />
+                  </div>
                 </label>
               )}
               <label>
-                Phone number
-                <input name="phone" type="tel" placeholder="+94 77 123 4567" />
+                {t("auth_phone_label", "Phone number")}
+                <div className="input-icon">
+                  <Phone size={17} />
+                  <input name="phone" type="tel" placeholder={t("auth_phone_placeholder", "+94 77 123 4567")} />
+                </div>
               </label>
             </>
           )}
           <label>
-            Email address
+            {t("auth_email_label", "Email address")}
             <div className="input-icon">
               <Mail size={17} />
               <input
@@ -233,12 +280,12 @@ function Auth({ onLogin, toast, demo }) {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
+                placeholder={t("auth_email_placeholder", "you@example.com")}
               />
             </div>
           </label>
           <label>
-            Password
+            {t("auth_pass_label", "Password")}
             <div className="input-icon">
               <LockKeyhole size={17} />
               <input
@@ -250,52 +297,95 @@ function Auth({ onLogin, toast, demo }) {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder={
-                  register ? "At least 12 characters" : "Enter your password"
+                  register ? t("auth_pass_new_placeholder", "At least 12 characters") : t("auth_pass_cur_placeholder", "Enter your password")
                 }
               />
             </div>
           </label>
           {register && (
             <small className="muted">
-              Buyers need manager verification before placing bids. Admin
-              accounts are created separately.
+              {t("auth_buyer_verification_notice", "Buyers need manager verification before placing bids. Admin accounts are created separately.")}
             </small>
           )}
           <button className="btn primary full" disabled={busy}>
-            {busy ? "Please wait…" : register ? "Create account" : "Sign in"}
+            {busy ? t("action_please_wait", "Please wait…") : register ? t("action_create_account", "Create account") : t("action_sign_in", "Sign in")}
             <ArrowRight size={17} />
           </button>
           {demo && (
-            <div className="demo-box">
-              <div>
-                <span className="badge scheduled">LOCAL DEMO</span>
-                <small>Choose a role to fill the sign-in details</small>
+            <div className="demo-box" role="region" aria-label={t("auth_demo_title", "Explore demo")}>
+              <div className="demo-header">
+                <strong className="demo-title">{t("auth_demo_title", "Explore demo")}</strong>
+                <span className="demo-subtitle">{t("auth_demo_subtitle", "Choose a role")}</span>
               </div>
-              <div className="demo-roles">
-                {["seller", "buyer", "admin"].map((r) => (
-                  <button key={r} type="button" onClick={() => fill(r)}>
-                    {r === "admin"
-                      ? "Manager"
-                      : r[0].toUpperCase() + r.slice(1)}
-                    <ArrowUpRight size={13} />
-                  </button>
-                ))}
+
+              <div className="demo-roles" role="radiogroup" aria-label={t("auth_demo_title", "Explore demo")}>
+                {[
+                  {
+                    id: "seller",
+                    icon: Ship,
+                    titleKey: "auth_demo_seller",
+                    fallbackTitle: "Seller",
+                    descKey: "auth_demo_seller_desc",
+                    fallbackDesc: "Sell your fish",
+                  },
+                  {
+                    id: "buyer",
+                    icon: Fish,
+                    titleKey: "auth_demo_buyer",
+                    fallbackTitle: "Buyer",
+                    descKey: "auth_demo_buyer_desc",
+                    fallbackDesc: "Buy fish at auction",
+                  },
+                  {
+                    id: "admin",
+                    icon: Gavel,
+                    titleKey: "auth_demo_admin",
+                    fallbackTitle: "Auction Manager",
+                    descKey: "auth_demo_admin_desc",
+                    fallbackDesc: "Manage fish auctions",
+                  },
+                ].map(({ id, icon: RoleIcon, titleKey, fallbackTitle, descKey, fallbackDesc }) => {
+                  const isSelected = email === `${id}@harborx.demo`;
+                  return (
+                    <button
+                      key={id}
+                      type="button"
+                      role="radio"
+                      className={`demo-role-card ${isSelected ? "selected" : ""}`}
+                      onClick={() => fill(id)}
+                      aria-checked={isSelected}
+                    >
+                      <div className={`demo-role-icon ${id}`}>
+                        <RoleIcon size={22} aria-hidden="true" />
+                      </div>
+                      <div className="demo-role-text">
+                        <strong className="demo-role-title">{t(titleKey, fallbackTitle)}</strong>
+                        <span className="demo-role-desc">{t(descKey, fallbackDesc)}</span>
+                      </div>
+                      {isSelected && (
+                        <span className="demo-role-check" aria-hidden="true">
+                          <Check size={11} strokeWidth={2.5} />
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           )}
           <div className="auth-foot">
-            <ShieldCheck size={14} /> Secure access for your harbor community
+            <ShieldCheck size={14} /> {t("auth_secure_access", "Secure access for your harbor community")}
           </div>
         </form>
         <footer>
-          © {new Date().getFullYear()} HarborX · Fish Harbor Management
+          © {new Date().getFullYear()} HarborX · {t("auth_footer_tag", "Fish Harbor Management")}
         </footer>
       </section>
     </div>
   );
 }
 
-export default function App() {
+function HarborApp() {
   const [user, setUser] = useState(null),
     [ready, setReady] = useState(false),
     [demo, setDemo] = useState(false),
@@ -316,6 +406,7 @@ export default function App() {
     [offlineOwner, setOfflineOwner] = useState(null),
     [localMode, setLocalMode] = useState(false),
     [synced, setSynced] = useState(null);
+  const { lang, t } = useLanguage();
   const draftStore = useDraftVault(user);
   const pendingDrafts = draftStore.drafts.filter(
     (draft) => draft.state !== "synced",
@@ -588,30 +679,30 @@ export default function App() {
     role === "admin"
       ? [
           {
-            label: "Total auction value",
+            label: t("overview_stat_total_value", "Total auction value"),
             value: `LKR ${money(lots.reduce((n, l) => n + Number(l.final_price || 0), 0))}`,
-            sub: "Across completed auctions",
+            sub: t("overview_stat_total_value_sub", "Across completed auctions"),
             icon: TrendingUp,
             color: "teal",
           },
           {
-            label: "Live auctions",
+            label: t("overview_stat_live_auctions", "Live auctions"),
             value: live.length,
-            sub: `${lots.filter((l) => l.status === "scheduled").length} ready to start`,
+            sub: `${lots.filter((l) => l.status === "scheduled").length} ${t("overview_stat_live_auctions_sub", "{count} ready to start").replace("{count}", "").trim()}`,
             icon: Gavel,
             color: "blue",
           },
           {
-            label: "Registered users",
+            label: t("overview_stat_registered_users", "Registered users"),
             value: users.length,
-            sub: `${users.filter((u) => u.role === "buyer" && !u.verified).length} buyers awaiting verification`,
+            sub: `${users.filter((u) => u.role === "buyer" && !u.verified).length} ${t("overview_stat_registered_users_sub", "{count} buyers awaiting verification").replace("{count}", "").trim()}`,
             icon: Users,
             color: "purple",
           },
           {
-            label: "Outstanding payments",
+            label: t("overview_stat_outstanding_payments", "Outstanding payments"),
             value: `LKR ${money(outstanding)}`,
-            sub: `${invoices.filter((l) => l.payment_status === "Overdue").length} overdue invoices`,
+            sub: `${invoices.filter((l) => l.payment_status === "Overdue").length} ${t("overview_stat_outstanding_payments_sub", "{count} overdue invoices").replace("{count}", "").trim()}`,
             icon: Wallet,
             color: "amber",
           },
@@ -619,60 +710,60 @@ export default function App() {
       : role === "seller"
         ? [
             {
-              label: "Total sales",
+              label: t("overview_stat_total_sales", "Total sales"),
               value: `LKR ${money(sales)}`,
-              sub: "Gross completed auction sales",
+              sub: t("overview_stat_total_sales_sub", "Gross completed auction sales"),
               icon: TrendingUp,
               color: "teal",
             },
             {
-              label: "My catches",
+              label: t("overview_stat_my_catches", "My catches"),
               value: own.length,
-              sub: `${own.filter((l) => l.status === "pending").length} awaiting review`,
+              sub: `${own.filter((l) => l.status === "pending").length} ${t("overview_stat_my_catches_sub", "{count} awaiting review").replace("{count}", "").trim()}`,
               icon: Fish,
               color: "blue",
             },
             {
-              label: "Active auctions",
+              label: t("overview_stat_active_auctions", "Active auctions"),
               value: own.filter((l) => l.status === "live").length,
-              sub: "Monitor your latest bids",
+              sub: t("overview_stat_active_auctions_sub", "Monitor your latest bids"),
               icon: Gavel,
               color: "purple",
             },
             {
-              label: "Payments pending",
+              label: t("overview_stat_payments_pending", "Payments pending"),
               value: `LKR ${money(outstanding)}`,
-              sub: "Outstanding buyer payments",
+              sub: t("overview_stat_payments_pending_sub", "Outstanding buyer payments"),
               icon: Wallet,
               color: "amber",
             },
           ]
         : [
             {
-              label: "Live auctions",
+              label: t("overview_stat_buyer_live", "Live auctions"),
               value: live.length,
-              sub: "Fresh opportunities at the harbor",
+              sub: t("overview_stat_buyer_live_sub", "Fresh opportunities at the harbor"),
               icon: Gavel,
               color: "teal",
             },
             {
-              label: "Bids placed",
+              label: t("overview_stat_bids_placed", "Bids placed"),
               value: bids.length,
-              sub: `${new Set(bids.map((b) => b.lot_id)).size} auctions participated`,
+              sub: `${new Set(bids.map((b) => b.lot_id)).size} ${t("overview_stat_bids_placed_sub", "{count} active bids leading").replace("{count}", "").trim()}`,
               icon: Layers,
               color: "blue",
             },
             {
-              label: "Won lots",
+              label: t("overview_stat_won_lots", "Won lots"),
               value: won.length,
-              sub: "Your successful auctions",
+              sub: t("overview_stat_won_lots_sub", "Your successful auctions"),
               icon: ShieldCheck,
               color: "purple",
             },
             {
-              label: "Payments pending",
+              label: t("overview_stat_payments_pending", "Payments pending"),
               value: `LKR ${money(outstanding)}`,
-              sub: "Your outstanding balance",
+              sub: t("overview_stat_payments_pending_sub", "Your outstanding balance"),
               icon: Wallet,
               color: "amber",
             },
@@ -698,22 +789,20 @@ export default function App() {
         <>
           {!online && (
             <div className="alert warning">
-              <WifiOff size={18} /> You’re offline. Sellers can save catch
-              drafts here. Bidding requires a live server connection.
+              <WifiOff size={18} /> {t("helper_offline_banner", "You’re offline. Sellers can save catch drafts here. Bidding requires a live server connection.")}
             </div>
           )}
           {error && (
             <div className="alert error">
               <AlertCircle size={18} />
               <span>{error}</span>
-              <button onClick={refresh}>Retry</button>
+              <button onClick={refresh}>{t("action_retry", "Retry")}</button>
             </div>
           )}
           {role === "buyer" && !user.verified && (
             <div className="alert warning">
               <ShieldCheck size={18} />
-              Your buyer account is awaiting manager verification. You can
-              browse auctions while you wait.
+              {t("helper_buyer_unverified", "Your buyer account is awaiting manager verification. You can browse auctions while you wait.")}
             </div>
           )}
         </>
@@ -762,16 +851,15 @@ export default function App() {
             <div className="alert">
               <RefreshCw size={18} />
               <span>
-                {pendingDrafts.length} catch draft
-                {pendingDrafts.length > 1 ? "s" : ""} saved on this device.
+                {pendingDrafts.length} {t("helper_sync_ready", "catch drafts saved on this device.")}
               </span>
               <button
                 disabled={busy || draftStore.busy || !online}
                 onClick={syncDrafts}
               >
-                Sync now
+                {t("action_sync_now", "Sync now")}
               </button>
-              <button onClick={() => go("catches")}>View drafts</button>
+              <button onClick={() => go("catches")}>{t("action_view_all", "View drafts")}</button>
             </div>
           )}
           {page === "overview" && (
@@ -879,7 +967,16 @@ export default function App() {
   );
 }
 
+export default function App() {
+  return (
+    <LanguageProvider>
+      <HarborApp />
+    </LanguageProvider>
+  );
+}
+
 function CatchForm({ value, user, onClose, run, busy, onDraft, online }) {
+  const { lang, t } = useLanguage();
   const edit = Boolean(value.id);
   const initialArrival = new Date(value.arrival_at || Date.now() + 2 * 3600000);
   const localArrival = new Date(
@@ -935,98 +1032,132 @@ function CatchForm({ value, user, onClose, run, busy, onDraft, online }) {
   }
   return (
     <Modal
-      title={edit ? "Edit catch" : "Register a new catch"}
-      subtitle="Good records start on the boat. Prices are in LKR per kg."
+      title={edit ? t("catch_edit_title", "Edit catch") : t("catch_register_title", "Register a new catch")}
+      subtitle={t("catch_subtitle", "Good records start on the boat. Prices are in LKR per kg.")}
       close={onClose}
     >
       <form className="modal-body catch-form" onSubmit={submit}>
+        <div className="workflow-steps" aria-label="Catch registration stages">
+          <div className="workflow-step active">
+            <span className="step-badge">1</span>
+            <div>
+              <strong>{t("catch_step1_title", "Boat Declaration")}</strong>
+              <small>{t("catch_step1_sub", "Captain records")}</small>
+            </div>
+          </div>
+          <span className="step-separator">➔</span>
+          <div className="workflow-step">
+            <span className="step-badge">2</span>
+            <div>
+              <strong>{t("catch_step2_title", "Scale Inspection")}</strong>
+              <small>{t("catch_step2_sub", "Harbor verified")}</small>
+            </div>
+          </div>
+          <span className="step-separator">➔</span>
+          <div className="workflow-step">
+            <span className="step-badge">3</span>
+            <div>
+              <strong>{t("catch_step3_title", "Auction Bidding")}</strong>
+              <small>{t("catch_step3_sub", "Live market")}</small>
+            </div>
+          </div>
+        </div>
+
         <div className="form-grid">
           <label>
-            Fish species
+            {t("catch_field_species", "Fish species")}
             <select
               name="species"
               value={species}
               onChange={(e) => setSpecies(e.target.value)}
             >
               {[
-                "Yellowfin Tuna",
-                "Skipjack Tuna",
-                "Sardine",
-                "Seer Fish",
-                "Prawns",
-                "Mackerel",
-                "Other",
-              ].map((s) => (
-                <option key={s}>{s}</option>
+                ["Yellowfin Tuna", `${t("species_yellowfin", "Yellowfin Tuna")} — கெளவல் சுறா (Kelawalla)`],
+                ["Skipjack Tuna", `${t("species_skipjack", "Skipjack Tuna")} — பலயா மீன் (Balaya)`],
+                ["Seer Fish", `${t("species_seer", "Seer Fish")} — தோரா / நெய்மீன் (Thora)`],
+                ["Prawns", `${t("species_prawns", "Prawns")} — இறால் (Isso)`],
+                ["Sardine", `${t("species_sardine", "Sardine")} — சாலை மீன் (Salaya)`],
+                ["Mackerel", `${t("species_mackerel", "Mackerel")} — கானாங்கெளுத்தி (Kumbalawa)`],
+                ["Other", `${t("species_other", "Other fish")} — பிற மீன்கள்`],
+              ].map(([val, label]) => (
+                <option key={val} value={val}>{label}</option>
               ))}
             </select>
           </label>
           <label>
-            Quality grade
+            {t("catch_field_grade", "Quality grade")}
             <select name="grade" defaultValue={value.grade || "A"}>
-              {["A", "B", "C"].map((g) => (
-                <option key={g} value={g}>
-                  Grade {g}
-                </option>
-              ))}
+              <option value="A">{t("catch_grade_a", "Grade A — Export / Premium Quality")}</option>
+              <option value="B">{t("catch_grade_b", "Grade B — Fresh Local Market")}</option>
+              <option value="C">{t("catch_grade_c", "Grade C — Processing / Drying")}</option>
             </select>
           </label>
           <label>
-            Catch weight (kg)
-            <input
-              name="weight"
-              type="number"
-              min="0.01"
-              max="50000"
-              step="0.01"
-              defaultValue={value.weight}
-              required
-              placeholder="120"
-            />
+            {t("catch_field_weight", "Catch weight (kg)")}
+            <div className="unit-input-group">
+              <input
+                name="weight"
+                type="number"
+                min="0.01"
+                max="50000"
+                step="0.01"
+                defaultValue={value.weight}
+                required
+                placeholder="120"
+              />
+              <span className="unit-badge">kg</span>
+            </div>
           </label>
           <label>
-            Base price (LKR / kg)
-            <input
-              name="base_price"
-              type="number"
-              min="0.01"
-              step="0.01"
-              max="10000000"
-              defaultValue={value.base_price}
-              required
-              placeholder="1800"
-            />
+            {t("catch_field_base_price", "Base price (LKR / kg)")}
+            <div className="unit-input-group">
+              <input
+                name="base_price"
+                type="number"
+                min="0.01"
+                step="0.01"
+                max="10000000"
+                defaultValue={value.base_price}
+                required
+                placeholder="1800"
+              />
+              <span className="unit-badge">LKR / kg</span>
+            </div>
           </label>
           <label>
-            Minimum bid increment (LKR)
-            <input
-              name="min_increment"
-              type="number"
-              min="0.01"
-              step="0.01"
-              max="10000000"
-              defaultValue={value.min_increment || 50}
-              required
-            />
+            {t("catch_field_min_increment", "Minimum bid increment (LKR)")}
+            <div className="unit-input-group">
+              <input
+                name="min_increment"
+                type="number"
+                min="0.01"
+                step="0.01"
+                max="10000000"
+                defaultValue={value.min_increment || 50}
+                required
+                placeholder="50"
+              />
+              <span className="unit-badge">LKR</span>
+            </div>
           </label>
           <label>
-            Arrival harbor
+            {t("catch_field_harbor", "Arrival harbor")}
             <select name="harbor" defaultValue={value.harbor || "Dikkowita"}>
               {[
-                "Dikkowita",
-                "Negombo",
-                "Galle",
-                "Mirissa",
-                "Trincomalee",
-                "Beruwala",
-                "Other",
-              ].map((h) => (
-                <option key={h}>{h}</option>
+                ["Dikkowita", `${t("harbor_dikkowita", "Dikkowita")} — திக்கோவிற்ற`],
+                ["Negombo", `${t("harbor_negombo", "Negombo")} — நீர்கொழும்பு`],
+                ["Galle", `${t("harbor_galle", "Galle")} — காலி`],
+                ["Mirissa", `${t("harbor_mirissa", "Mirissa")} — மிரிஸ்ஸ`],
+                ["Trincomalee", `${t("harbor_trincomalee", "Trincomalee")} — திருகோணமலை`],
+                ["Beruwala", `${t("harbor_beruwala", "Beruwala")} — பேருவளை`],
+                ["Other", `${t("harbor_other", "Other harbor")} — பிற துறைமுகம்`],
+              ].map(([val, label]) => (
+                <option key={val} value={val}>{label}</option>
               ))}
             </select>
           </label>
           <label>
-            Boat name / registration
+            {t("catch_field_boat", "Boat name / registration")}
             <input
               name="boat_name"
               required
@@ -1037,7 +1168,7 @@ function CatchForm({ value, user, onClose, run, busy, onDraft, online }) {
             />
           </label>
           <label>
-            Estimated arrival (device local time)
+            {t("catch_field_arrival", "Estimated arrival (device local time)")}
             <input
               name="arrival_at"
               type="datetime-local"
@@ -1047,20 +1178,19 @@ function CatchForm({ value, user, onClose, run, busy, onDraft, online }) {
           </label>
         </div>
         <label>
-          Catch notes
+          {t("catch_field_notes", "Catch notes")}
           <textarea
             name="notes"
             rows={3}
             maxLength={1000}
             defaultValue={value.notes}
-            placeholder="Storage, catch condition, or collection details…"
+            placeholder={t("catch_notes_placeholder", "Storage, catch condition, or collection details…")}
           />
         </label>
         <div className="alert">
           <ShieldCheck size={18} />
           <span>
-            The manager reviews your catch before publishing. You can edit or
-            withdraw while it awaits review.
+            {t("catch_manager_review_notice", "The manager reviews your catch before publishing. You can edit or withdraw while it awaits review.")}
           </span>
         </div>
         <div className="form-footer">
@@ -1075,17 +1205,17 @@ function CatchForm({ value, user, onClose, run, busy, onDraft, online }) {
               }}
             >
               <WifiOff size={16} />
-              Save on device
+              {t("catch_save_on_device", "Save on device")}
             </button>
           )}
           <button className="btn primary" disabled={busy}>
             {busy
-              ? "Saving…"
+              ? t("action_saving", "Saving…")
               : edit
-                ? "Save changes"
+                ? t("action_save_changes", "Save changes")
                 : online
-                  ? "Submit catch"
-                  : "Save offline draft"}
+                  ? t("catch_submit_catch", "Submit catch")
+                  : t("catch_save_offline_draft", "Save offline draft")}
             <ArrowRight size={16} />
           </button>
         </div>
@@ -1095,6 +1225,7 @@ function CatchForm({ value, user, onClose, run, busy, onDraft, online }) {
 }
 
 function LotModal({ id, user, close, run, busy, onEdit, toast, online }) {
+  const { lang, t } = useLanguage();
   const [data, setData] = useState(null),
     [error, setError] = useState(""),
     [tab, setTab] = useState("details"),
@@ -1160,9 +1291,9 @@ function LotModal({ id, user, close, run, busy, onEdit, toast, online }) {
       : 0;
   return (
     <Modal
-      title={l?.species || "Auction details"}
+      title={l?.species ? t("species_" + l.species.toLowerCase().replace(/\s+/g, ""), l.species) : t("lot_modal_tab_details", "Auction details")}
       subtitle={
-        l ? `${l.code} · ${l.harbor} harbor` : "Loading the latest auction…"
+        l ? `${l.code} · ${t("harbor_suffix", "{harbor} harbor").replace("{harbor}", t("harbor_" + (l.harbor || "").toLowerCase(), l.harbor))}` : t("action_please_wait", "Loading the latest auction…")
       }
       close={close}
       wide
@@ -1170,7 +1301,7 @@ function LotModal({ id, user, close, run, busy, onEdit, toast, online }) {
       {error && (
         <div className="alert error">
           {error}
-          <button onClick={load}>Retry</button>
+          <button onClick={load}>{t("action_retry", "Retry")}</button>
         </div>
       )}
       {!data ? (
@@ -1185,27 +1316,27 @@ function LotModal({ id, user, close, run, busy, onEdit, toast, online }) {
               <div>
                 <Badge status={active ? "live" : l.status} />
                 <span>
-                  Grade {l.grade} · {money(l.weight)} kg
+                  {t("lot_card_grade", "Grade {grade}", { grade: l.grade })} · {money(l.weight)} kg
                 </span>
               </div>
             </div>
             <div className="detail-price">
               <span className="eyebrow">
-                {l.highest_bid ? "CURRENT HIGHEST BID" : "BASE PRICE"}
+                {l.highest_bid ? t("lot_modal_highest_bid", "CURRENT HIGHEST BID") : t("lot_modal_base_price", "BASE PRICE")}
               </span>
               <h2>
                 LKR {money(l.highest_bid || l.base_price)}
-                <small>/ kg</small>
+                <small>{t("lot_card_per_kg", "/ kg")}</small>
               </h2>
-              <p>Minimum increment: LKR {money(l.min_increment)} / kg</p>
+              <p>{t("lot_modal_min_increment", "Minimum increment: LKR {increment} / kg", { increment: money(l.min_increment) })}</p>
               <div className="detail-chips">
                 <span>
                   <Gavel size={15} />
-                  {l.bid_count} accepted bids
+                  {t("lot_modal_accepted_bids", "{count} accepted bids", { count: l.bid_count })}
                 </span>
                 <span>
                   <Layers size={15} />
-                  {l.round ? `Round ${l.round} of 3` : "Not started"}
+                  {l.round ? t("lot_modal_round", "Round {round} of 3", { round: l.round }) : t("lot_modal_not_started", "Not started")}
                 </span>
               </div>
               {l.status === "live" && (
@@ -1233,7 +1364,7 @@ function LotModal({ id, user, close, run, busy, onEdit, toast, online }) {
                   className="bid-form"
                 >
                   <label>
-                    Your bid (LKR / kg)
+                    {t("lot_modal_your_bid_label", "Your bid (LKR / kg)")}
                     <input
                       aria-label="Your bid amount"
                       type="number"
@@ -1243,24 +1374,58 @@ function LotModal({ id, user, close, run, busy, onEdit, toast, online }) {
                       required
                       value={amount}
                       onChange={(e) => setAmount(e.target.value)}
-                      placeholder={`Minimum ${money(minimum)}`}
+                      placeholder={t("lot_modal_min_placeholder", "Minimum {min}", { min: money(minimum) })}
                     />
                   </label>
-                  <small>
-                    Estimated total: LKR{" "}
-                    {money((Number(amount) || minimum) * Number(l.weight))}.
-                    Accepted bids cannot be withdrawn.
+                  <div className="quick-bids" aria-label="Quick bid increments">
+                    <span className="quick-bid-label">{t("lot_modal_quick_raise", "Quick raise:")}</span>
+                    {[50, 100, 250, 500].map((step) => (
+                      <button
+                        key={step}
+                        type="button"
+                        className="quick-bid-pill"
+                        onClick={() => {
+                          const currentBase = Number(amount) > minimum ? Number(amount) : minimum;
+                          setAmount(String(currentBase + step));
+                        }}
+                      >
+                        +{step} LKR
+                      </button>
+                    ))}
+                  </div>
+                  <div className="est-total-box">
+                    <div className="est-total-calc">
+                      <small>{t("lot_modal_calc_label", "Calculation")}</small>
+                      <span>
+                        {money(l.weight)} kg × LKR {money(Number(amount) || minimum)} / kg
+                      </span>
+                    </div>
+                    <div className="est-total-res">
+                      <small>{t("lot_modal_est_total_label", "Estimated total")}</small>
+                      <strong>LKR {money((Number(amount) || minimum) * Number(l.weight))}</strong>
+                    </div>
+                  </div>
+                  <small className="bid-commit-note">
+                    {t("lot_modal_bid_commit_note", "Accepted bids are final and cannot be withdrawn.")}
                   </small>
+                  {!user.verified && (
+                    <div className="alert warning" style={{ margin: "8px 0" }}>
+                      <ShieldCheck size={18} />
+                      <span>
+                        <strong>{t("lot_modal_awaiting_verification_title", "Awaiting Verification:")}</strong> {t("lot_modal_awaiting_verification_desc", "The harbor manager reviews all new buyers before bidding is unlocked.")}
+                      </span>
+                    </div>
+                  )}
                   <button
                     className="btn primary full"
                     disabled={busy || !user.verified || !online}
                   >
                     <Gavel size={17} />
                     {busy
-                      ? "Submitting…"
+                      ? t("action_submitting", "Submitting…")
                       : user.verified
-                        ? "Place bid"
-                        : "Verification required"}
+                        ? t("action_place_bid", "Place bid")
+                        : t("lot_modal_verification_required", "Verification required")}
                   </button>
                 </form>
               )}
@@ -1270,10 +1435,10 @@ function LotModal({ id, user, close, run, busy, onEdit, toast, online }) {
                   <div>
                     <strong>
                       {l.winner_id === user.id
-                        ? "You won this auction"
-                        : `Won by ${l.winner_name}`}
+                        ? t("lot_modal_you_won", "You won this auction")
+                        : t("lot_modal_won_by", "Won by {winner}", { winner: l.winner_name })}
                     </strong>
-                    <span>Total sale: LKR {money(l.final_price)}</span>
+                    <span>{t("lot_modal_total_sale", "Total sale: LKR {total}", { total: money(l.final_price) })}</span>
                   </div>
                 </div>
               )}
@@ -1288,37 +1453,45 @@ function LotModal({ id, user, close, run, busy, onEdit, toast, online }) {
               (admin || owner || l.winner_id === user.id)
                 ? ["payments"]
                 : []),
-            ].map((t) => (
-              <button
-                key={t}
-                className={tab === t ? "selected" : ""}
-                onClick={() => setTab(t)}
-              >
-                {t[0].toUpperCase() + t.slice(1)}
-                {t === "bids" && <span>{data.bids.length}</span>}
-              </button>
-            ))}
+            ].map((tabKey) => {
+              const tabName = {
+                details: t("lot_modal_tab_details", "Details"),
+                bids: t("lot_modal_tab_bids", "Bids"),
+                timeline: t("lot_modal_tab_timeline", "Timeline"),
+                payments: t("lot_modal_tab_payments", "Payments"),
+              }[tabKey] || tabKey;
+              return (
+                <button
+                  key={tabKey}
+                  className={tab === tabKey ? "selected" : ""}
+                  onClick={() => setTab(tabKey)}
+                >
+                  {tabName}
+                  {tabKey === "bids" && <span>{data.bids.length}</span>}
+                </button>
+              );
+            })}
           </div>
           <div className="modal-body">
             {tab === "details" && (
               <>
                 <div className="detail-grid">
                   {[
-                    ["Seller", l.seller_name],
-                    ["Boat", l.boat_name],
-                    ["Harbor", l.harbor],
-                    ["Estimated arrival", date(l.arrival_at)],
-                    ["Declared weight", `${money(l.weight)} kg`],
+                    [t("lot_modal_seller", "Seller"), l.seller_name],
+                    [t("lot_modal_boat", "Boat"), l.boat_name],
+                    [t("lot_modal_harbor", "Harbor"), t("harbor_" + (l.harbor || "").toLowerCase(), l.harbor)],
+                    [t("lot_modal_est_arrival", "Estimated arrival"), date(l.arrival_at)],
+                    [t("lot_modal_declared_weight", "Declared weight"), `${money(l.weight)} kg`],
                     [
-                      "Inspected weight",
+                      t("lot_modal_inspected_weight", "Inspected weight"),
                       l.arrived
                         ? `${money(l.actual_weight)} kg`
-                        : "Awaiting arrival",
+                        : t("lot_modal_awaiting_arrival", "Awaiting arrival"),
                     ],
-                    ["Base price", `LKR ${money(l.base_price)} / kg`],
+                    [t("lot_modal_base_price", "Base price"), `LKR ${money(l.base_price)} / kg`],
                     [
-                      "Bid visibility",
-                      "Open amounts · buyer identities private",
+                      t("lot_modal_bid_visibility", "Bid visibility"),
+                      t("lot_modal_bid_visibility_desc", "Open amounts · buyer identities private"),
                     ],
                   ].map(([name, value]) => (
                     <div key={name}>
@@ -1329,25 +1502,25 @@ function LotModal({ id, user, close, run, busy, onEdit, toast, online }) {
                 </div>
                 {l.notes && (
                   <div className="detail-notes">
-                    <strong>Catch notes</strong>
+                    <strong>{t("catch_field_notes", "Catch notes")}</strong>
                     <p>{l.notes}</p>
                   </div>
                 )}
                 {l.cancel_reason && (
                   <div className="alert warning">
-                    Cancellation reason: {l.cancel_reason}
+                    {t("lot_modal_cancellation_reason", "Cancellation reason: {reason}", { reason: l.cancel_reason })}
                   </div>
                 )}
                 {owner && l.status === "pending" && (
                   <div className="manager-actions">
                     <button className="btn secondary" onClick={() => onEdit(l)}>
-                      Edit catch
+                      {t("action_edit_catch", "Edit catch")}
                     </button>
                     <button
                       className="btn danger-outline"
                       onClick={() => setAction("cancel")}
                     >
-                      Withdraw catch
+                      {t("action_withdraw_catch", "Withdraw catch")}
                     </button>
                   </div>
                 )}
@@ -1356,8 +1529,8 @@ function LotModal({ id, user, close, run, busy, onEdit, toast, online }) {
                     <section className="manager-panel">
                       <div className="section-heading">
                         <div>
-                          <h3>Auction manager controls</h3>
-                          <p>All changes are recorded in the audit trail.</p>
+                          <h3>{t("lot_modal_manager_controls", "Auction manager controls")}</h3>
+                          <p>{t("lot_modal_audit_trail_notice", "All changes are recorded in the audit trail.")}</p>
                         </div>
                         <ShieldCheck size={20} />
                       </div>
@@ -1375,7 +1548,7 @@ function LotModal({ id, user, close, run, busy, onEdit, toast, online }) {
                             }
                           >
                             <Check size={16} />
-                            Approve & publish
+                            {t("action_approve_publish", "Approve & publish")}
                           </button>
                         )}
                         {(l.status === "scheduled" || ended) && l.round < 3 && (
@@ -1388,7 +1561,7 @@ function LotModal({ id, user, close, run, busy, onEdit, toast, online }) {
                               value={minutes}
                               onChange={(e) => setMinutes(e.target.value)}
                             />
-                            <span>min</span>
+                            <span>{t("lot_modal_min_unit", "min")}</span>
                             <button
                               className="btn primary"
                               disabled={busy}
@@ -1401,7 +1574,7 @@ function LotModal({ id, user, close, run, busy, onEdit, toast, online }) {
                               }
                             >
                               <Gavel size={15} />
-                              Start round {l.round + 1}
+                              {t("action_start_round", "Start round {round}", { round: l.round + 1 })}
                             </button>
                           </div>
                         )}
@@ -1411,7 +1584,7 @@ function LotModal({ id, user, close, run, busy, onEdit, toast, online }) {
                             disabled={busy}
                             onClick={() => setAction("end-round")}
                           >
-                            End current round
+                            {t("action_end_round", "End current round")}
                           </button>
                         )}
                         {["scheduled", "live"].includes(l.status) &&
@@ -1425,7 +1598,7 @@ function LotModal({ id, user, close, run, busy, onEdit, toast, online }) {
                               }}
                             >
                               <Ship size={16} />
-                              Verify arrival
+                              {t("action_verify_arrival", "Verify arrival")}
                             </button>
                           )}
                         {l.arrived && !active && (
@@ -1435,7 +1608,7 @@ function LotModal({ id, user, close, run, busy, onEdit, toast, online }) {
                             onClick={() => setAction("close")}
                           >
                             <CheckCircle2 size={16} />
-                            Finalize auction
+                            {t("action_finalize_auction", "Finalize auction")}
                           </button>
                         )}
                         <button
@@ -1443,13 +1616,12 @@ function LotModal({ id, user, close, run, busy, onEdit, toast, online }) {
                           disabled={busy}
                           onClick={() => setAction("cancel")}
                         >
-                          Cancel lot
+                          {t("action_cancel_lot", "Cancel lot")}
                         </button>
                       </div>
                       {active && (
                         <p className="muted small-text">
-                          End the round before finalizing the auction. Confirm
-                          arrival and the catch weight first.
+                          {t("lot_modal_manager_end_notice", "End the round before finalizing the auction. Confirm arrival and the catch weight first.")}
                         </p>
                       )}
                     </section>
@@ -1462,17 +1634,17 @@ function LotModal({ id, user, close, run, busy, onEdit, toast, online }) {
                   <table>
                     <thead>
                       <tr>
-                        <th>Buyer</th>
-                        <th>Bid / kg</th>
-                        <th>Round</th>
-                        <th>Accepted at</th>
+                        <th>{t("lot_modal_th_buyer", "Buyer")}</th>
+                        <th>{t("lot_modal_th_bid_per_kg", "Bid / kg")}</th>
+                        <th>{t("lot_modal_th_round", "Round")}</th>
+                        <th>{t("lot_modal_th_accepted_at", "Accepted at")}</th>
                       </tr>
                     </thead>
                     <tbody>
                       {data.bids.map((b) => (
                         <tr key={b.id}>
                           <td>
-                            <strong>{b.is_mine ? "You" : b.buyer_name}</strong>
+                            <strong>{b.is_mine ? t("lot_modal_you", "You") : b.buyer_name}</strong>
                           </td>
                           <td>LKR {money(b.amount)}</td>
                           <td>{b.round}</td>
@@ -1485,8 +1657,8 @@ function LotModal({ id, user, close, run, busy, onEdit, toast, online }) {
               ) : (
                 <Empty
                   icon={Gavel}
-                  title="No bids yet"
-                  text="The first valid bid must meet the base price."
+                  title={t("lot_modal_no_bids_title", "No bids yet")}
+                  text={t("lot_modal_no_bids_text", "The first valid bid must meet the base price.")}
                 />
               ))}
             {tab === "timeline" && <ActivityList events={data.events} />}
@@ -1494,21 +1666,21 @@ function LotModal({ id, user, close, run, busy, onEdit, toast, online }) {
               <>
                 <div className="invoice-summary">
                   <div>
-                    <small>Sale total</small>
+                    <small>{t("payments_stat_turnover", "Sale total")}</small>
                     <strong>LKR {money(l.final_price)}</strong>
                   </div>
                   <div>
-                    <small>Commission ({l.commission_rate}%)</small>
+                    <small>{t("lot_modal_commission", "Commission ({rate}%)", { rate: l.commission_rate })}</small>
                     <strong>LKR {money(l.commission)}</strong>
                   </div>
                   <div>
-                    <small>Seller proceeds</small>
+                    <small>{t("lot_modal_seller_proceeds", "Seller proceeds")}</small>
                     <strong>
                       LKR {money(Number(l.final_price) - Number(l.commission))}
                     </strong>
                   </div>
                   <div>
-                    <small>Balance · due {date(l.payment_due_at)}</small>
+                    <small>{t("lot_modal_balance_due", "Balance · due {date}", { date: date(l.payment_due_at) })}</small>
                     <strong>LKR {money(l.balance)}</strong>
                     <Badge status={l.payment_status} />
                   </div>
@@ -1533,14 +1705,13 @@ function LotModal({ id, user, close, run, busy, onEdit, toast, online }) {
                         form.reset();
                     }}
                   >
-                    <h3>Record a received payment</h3>
+                    <h3>{t("lot_modal_record_payment_title", "Record a received payment")}</h3>
                     <p>
-                      Confirm receipt before recording. This records a payment;
-                      it does not transfer money.
+                      {t("lot_modal_record_payment_desc", "Confirm receipt before recording. This records a payment; it does not transfer money.")}
                     </p>
                     <div className="form-grid">
                       <label>
-                        Amount (LKR)
+                        {t("lot_modal_amount_label", "Amount (LKR)")}
                         <input
                           name="amount"
                           type="number"
@@ -1552,7 +1723,7 @@ function LotModal({ id, user, close, run, busy, onEdit, toast, online }) {
                         />
                       </label>
                       <label>
-                        Receipt / bank reference
+                        {t("lot_modal_receipt_label", "Receipt / bank reference")}
                         <input
                           name="reference"
                           required
@@ -1564,7 +1735,7 @@ function LotModal({ id, user, close, run, busy, onEdit, toast, online }) {
                     </div>
                     <button className="btn primary" disabled={busy}>
                       <Plus size={15} />
-                      Record payment
+                      {t("action_record_payment", "Record payment")}
                     </button>
                   </form>
                 )}
@@ -1573,10 +1744,10 @@ function LotModal({ id, user, close, run, busy, onEdit, toast, online }) {
                     <table>
                       <thead>
                         <tr>
-                          <th>Reference</th>
-                          <th>Amount (LKR)</th>
-                          <th>Recorded by</th>
-                          <th>Date</th>
+                          <th>{t("lot_modal_th_reference", "Reference")}</th>
+                          <th>{t("lot_modal_th_amount", "Amount (LKR)")}</th>
+                          <th>{t("lot_modal_th_recorded_by", "Recorded by")}</th>
+                          <th>{t("lot_modal_th_date", "Date")}</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -1592,7 +1763,7 @@ function LotModal({ id, user, close, run, busy, onEdit, toast, online }) {
                     </table>
                   </div>
                 ) : (
-                  <p className="muted">No payment receipts recorded yet.</p>
+                  <p className="muted">{t("lot_modal_no_payments", "No payment receipts recorded yet.")}</p>
                 )}
               </>
             )}
@@ -1624,10 +1795,10 @@ function LotModal({ id, user, close, run, busy, onEdit, toast, online }) {
                   <h3>
                     {
                       {
-                        arrival: "Confirm catch arrival",
-                        cancel: "Cancel this lot",
-                        "end-round": "End the current round?",
-                        close: "Finalize this auction?",
+                        arrival: t("lot_modal_action_arrival", "Confirm catch arrival"),
+                        cancel: t("lot_modal_action_cancel", "Cancel this lot"),
+                        "end-round": t("lot_modal_action_end_round", "End the current round?"),
+                        close: t("lot_modal_action_close", "Finalize this auction?"),
                       }[action]
                     }
                   </h3>
@@ -1643,11 +1814,10 @@ function LotModal({ id, user, close, run, busy, onEdit, toast, online }) {
                 {action === "arrival" && (
                   <>
                     <p>
-                      Inspect the catch at the harbor. A weight different from
-                      the advertised catch requires cancellation and relisting.
+                      {t("lot_modal_arrival_desc", "Inspect the catch at the harbor. A weight different from the advertised catch requires cancellation and relisting.")}
                     </p>
                     <label>
-                      Inspected weight (kg)
+                      {t("lot_modal_inspected_weight", "Inspected weight")} (kg)
                       <input
                         type="number"
                         min="0.01"
@@ -1662,35 +1832,38 @@ function LotModal({ id, user, close, run, busy, onEdit, toast, online }) {
                 )}
                 {action === "cancel" && (
                   <label>
-                    Reason for cancellation
+                    {t("lot_modal_cancel_reason_label", "Reason for cancellation")}
                     <textarea
                       required
                       minLength={5}
                       maxLength={500}
                       value={reason}
                       onChange={(e) => setReason(e.target.value)}
-                      placeholder="Explain withdrawal, weight mismatch, or non-arrival…"
+                      placeholder={t("lot_modal_cancel_placeholder", "Explain withdrawal, weight mismatch, or non-arrival…")}
                     />
                   </label>
                 )}
                 {action === "close" && (
                   <p>
                     {l.highest_bid
-                      ? `Award this lot to ${l.winner_name || "the highest valid bidder"} at LKR ${money(l.highest_bid)}/kg. The sale total will be LKR ${money(Number(l.highest_bid) * Number(l.actual_weight))}.`
-                      : "This lot has no accepted bids. It will be marked unsold."}
+                      ? t("lot_modal_close_desc_bids", "Award this lot to {winner} at LKR {price}/kg. The sale total will be LKR {total}.", {
+                          winner: l.winner_name || "the highest valid bidder",
+                          price: money(l.highest_bid),
+                          total: money(Number(l.highest_bid) * Number(l.actual_weight)),
+                        })
+                      : t("lot_modal_close_desc_nobids", "This lot has no accepted bids. It will be marked unsold.")}
                   </p>
                 )}
                 {action === "end-round" && (
                   <p>
-                    New bids will stop immediately. You can then verify arrival,
-                    finalize, or start the next available round.
+                    {t("lot_modal_end_round_desc", "New bids will stop immediately. You can then verify arrival, finalize, or start the next available round.")}
                   </p>
                 )}
                 <button
                   className={`btn ${action === "cancel" ? "danger-solid" : "primary"}`}
                   disabled={busy}
                 >
-                  {busy ? "Saving…" : "Confirm"}
+                  {busy ? t("action_saving", "Saving…") : t("action_confirm", "Confirm")}
                   <Check size={16} />
                 </button>
               </form>

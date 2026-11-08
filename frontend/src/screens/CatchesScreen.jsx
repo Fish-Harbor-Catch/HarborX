@@ -10,6 +10,7 @@ import { Button } from "../components/ui/Button.jsx";
 import { AuctionList } from "../components/domain/index.js";
 import { DraftPanel } from "../DraftPanel.jsx";
 import { api } from "../api.js";
+import { useLanguage } from "../i18n.jsx";
 
 /**
  * Screen 3: Modernized Seller Catches Screen.
@@ -30,10 +31,12 @@ export function CatchesScreen({
   syncDrafts,
   onEditDraft,
 }) {
+  const { lang, t } = useLanguage();
+
   const handleAuthorize = async () => {
     const { user: current } = await api("/auth/me");
     if (current.id !== user.id || current.role !== "seller") {
-      throw new Error("Sign in again as this seller.");
+      throw new Error(t("auth_signin_again", "Sign in again as this seller."));
     }
     if (verifyDraftOwner) {
       await verifyDraftOwner(current);
@@ -44,10 +47,10 @@ export function CatchesScreen({
     <>
       <PageHeader>
         <PageTitle
-          eyebrow="FROM YOUR BOAT TO THE MARKET"
-          description="Manage your catch, from registration to the final sale."
+          eyebrow={t("catches_eyebrow", "FROM YOUR BOAT TO THE MARKET")}
+          description={t("catches_desc", "Manage your catch, from registration to the final sale.")}
         >
-          My catches
+          {t("catches_title", "My catches")}
         </PageTitle>
 
         <PageActions>
@@ -57,7 +60,7 @@ export function CatchesScreen({
               onClick={onRegisterCatch}
               icon={<Plus size={17} aria-hidden="true" />}
             >
-              Register catch
+              {t("action_register_catch", "Register catch")}
             </Button>
           )}
         </PageActions>

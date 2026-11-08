@@ -2,18 +2,21 @@ import React from "react";
 import { Wallet, Gavel, CheckCircle2, Fish, Activity } from "lucide-react";
 import { EmptyState } from "../ui/EmptyState.jsx";
 import { date } from "../../api.js";
+import { useLanguage } from "../../i18n.jsx";
 
 /**
  * Modernized Activity Timeline component.
  * Displays audit log events with contextual maritime status icons and timestamps.
  */
 export function ActivityList({ events }) {
+  const { t } = useLanguage();
+
   if (!events || events.length === 0) {
     return (
       <EmptyState
         icon={Activity}
-        title="A fresh start"
-        text="Your workspace activity will appear here."
+        title={t("activity_empty_title", "A fresh start")}
+        text={t("activity_empty_desc", "Your workspace activity will appear here.")}
       />
     );
   }

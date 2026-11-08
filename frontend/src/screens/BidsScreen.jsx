@@ -10,6 +10,7 @@ import { Badge } from "../components/ui/Badge.jsx";
 import { Button } from "../components/ui/Button.jsx";
 import { EmptyState } from "../components/ui/EmptyState.jsx";
 import { money, date } from "../api.js";
+import { useLanguage } from "../i18n.jsx";
 
 /**
  * Screen 4a: Modernized Buyer Bids History Screen.
@@ -17,14 +18,16 @@ import { money, date } from "../api.js";
  * pricing per kilogram, and direct links to lot detail dialogs.
  */
 export function BidsScreen({ bids = [], user, onSelectLot }) {
+  const { lang, t } = useLanguage();
+
   return (
     <>
       <PageHeader>
         <PageTitle
-          eyebrow="FRESH OPPORTUNITIES, FAIR PRICES"
-          description="Keep an eye on every bid you place."
+          eyebrow={t("bids_eyebrow", "FRESH OPPORTUNITIES, FAIR PRICES")}
+          description={t("bids_desc", "Keep an eye on every bid you place.")}
         >
-          My bids
+          {t("bids_title", "My bids")}
         </PageTitle>
       </PageHeader>
 
@@ -32,9 +35,9 @@ export function BidsScreen({ bids = [], user, onSelectLot }) {
         <CardHeader>
           <div>
             <h2>
-              Your bid history <span className="count">{bids.length}</span>
+              {t("bids_history_heading", "Your bid history")} <span className="count">{bids.length}</span>
             </h2>
-            <p>Accepted bids are binding and cannot be withdrawn.</p>
+            <p>{t("bids_history_sub", "Accepted bids are binding and cannot be withdrawn.")}</p>
           </div>
         </CardHeader>
 
@@ -43,12 +46,12 @@ export function BidsScreen({ bids = [], user, onSelectLot }) {
             <table>
               <thead>
                 <tr>
-                  <th scope="col">Auction lot</th>
-                  <th scope="col">Round</th>
-                  <th scope="col">Your bid / kg</th>
-                  <th scope="col">Highest / kg</th>
-                  <th scope="col">Position</th>
-                  <th scope="col">Placed at</th>
+                  <th scope="col">{t("bids_th_lot", "Auction lot")}</th>
+                  <th scope="col">{t("bids_th_round", "Round")}</th>
+                  <th scope="col">{t("bids_th_your_bid", "Your bid / kg")}</th>
+                  <th scope="col">{t("bids_th_highest", "Highest / kg")}</th>
+                  <th scope="col">{t("bids_th_position", "Position")}</th>
+                  <th scope="col">{t("bids_th_placed_at", "Placed at")}</th>
                   <th scope="col">
                     <span className="sr-only">Actions</span>
                   </th>
@@ -68,19 +71,22 @@ export function BidsScreen({ bids = [], user, onSelectLot }) {
                       : "outbid";
                   const statusLabel = isClosed
                     ? isWinner
-                      ? "Won"
-                      : "Closed"
+                      ? t("status_won", "Won")
+                      : t("status_closed", "Closed")
                     : isLeading
-                      ? "Leading"
-                      : "Outbid";
+                      ? t("status_leading", "Leading")
+                      : t("status_outbid", "Outbid");
+
+                  const speciesKey = b.species?.toLowerCase().replace(/\s+/g, "_");
+                  const speciesLabel = (speciesKey && t(`species_${speciesKey}`, null)) || b.species;
 
                   return (
                     <tr key={b.id}>
                       <td>
-                        <strong>{b.species}</strong>
+                        <strong>{speciesLabel}</strong>
                         <small>{b.code}</small>
                       </td>
-                      <td>Round {b.round}</td>
+                      <td>{t("lot_modal_round", `Round ${b.round}`, { round: b.round })}</td>
                       <td>LKR {money(b.amount)}</td>
                       <td>LKR {money(b.highest_bid)}</td>
                       <td>
@@ -90,7 +96,7 @@ export function BidsScreen({ bids = [], user, onSelectLot }) {
                       <td>
                         <Button
                           variant="icon"
-                          aria-label={`View ${b.code}`}
+                          aria-label={`${t("action_view_lot", "View")} ${b.code}`}
                           onClick={() => onSelectLot(b.lot_id)}
                         >
                           <ArrowUpRight size={18} aria-hidden="true" />
@@ -105,8 +111,8 @@ export function BidsScreen({ bids = [], user, onSelectLot }) {
         ) : (
           <EmptyState
             icon={Gavel}
-            title="Your first bid is waiting"
-            text="Explore auctions and place a bid to get started."
+            title={t("bids_empty_title", "No bids placed yet")}
+            text={t("bids_empty_desc", "Explore live auctions to place your first bid.")}
           />
         )}
       </Card>

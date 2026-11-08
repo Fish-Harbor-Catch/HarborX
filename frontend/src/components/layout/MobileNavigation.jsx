@@ -1,6 +1,7 @@
 import React from "react";
 import { Menu } from "lucide-react";
 import { NAV, MOBILE_NAV_ITEMS } from "./nav-config.js";
+import { useLanguage } from "../../i18n.jsx";
 
 /**
  * Mobile Bottom Navigation Component
@@ -19,6 +20,7 @@ export function MobileNavigation({
   className = "",
   ...props
 }) {
+  const { lang, t } = useLanguage();
   const keys = MOBILE_NAV_ITEMS[role] || MOBILE_NAV_ITEMS.seller;
 
   return (
@@ -30,7 +32,8 @@ export function MobileNavigation({
       {keys.map((key) => {
         const item = NAV[key];
         if (!item) return null;
-        const [label, Icon] = item;
+        const [baseLabel, Icon] = item;
+        const label = lang !== "en" ? t(`nav_${key}`, baseLabel) : baseLabel;
         const isActive = page === key;
 
         return (
@@ -67,7 +70,7 @@ export function MobileNavigation({
         <span className="mobile-tab-icon-wrap">
           <Menu size={18} aria-hidden="true" />
         </span>
-        <span className="mobile-tab-label">More</span>
+        <span className="mobile-tab-label">{lang !== "en" ? t("nav_more", "More") : "More"}</span>
       </button>
     </nav>
   );

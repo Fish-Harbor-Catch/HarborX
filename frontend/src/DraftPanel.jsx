@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useDraftVault } from "./useDraftVault.js";
+import { useLanguage } from "./i18n.jsx";
 
 export function DraftPanel({
   store,
@@ -9,14 +10,16 @@ export function DraftPanel({
   onEdit,
   authorize,
 }) {
+  const { t } = useLanguage();
   const [passphrase, setPassphrase] = useState("");
   const [message, setMessage] = useState("");
+
   return (
-    <section className="panel local-drafts" aria-label="Local catch drafts">
+    <section className="panel local-drafts" aria-label={t("draft_panel_title", "Local catch drafts")}>
       <div className="section-heading">
         <div>
-          <h2>Local catch drafts</h2>
-          <p>Encrypted on this device. Upload only when you choose Sync.</p>
+          <h2>{t("draft_panel_title", "Local catch drafts")}</h2>
+          <p>{t("draft_panel_desc", "Encrypted on this device. Upload only when you choose Sync.")}</p>
         </div>
         {store.unlocked && (
           <button
@@ -24,14 +27,12 @@ export function DraftPanel({
             disabled={store.busy}
             onClick={store.lock}
           >
-            Lock drafts
+            {t("action_lock_drafts", "Lock drafts")}
           </button>
         )}
       </div>
       <p>
-        Use a separate local passphrase, not your account password. It cannot be
-        recovered. Offline access must be renewed online every 12 hours. Shared
-        devices should use separate browser profiles.
+        {t("draft_panel_notice", "Use a separate local passphrase, not your account password. It cannot be recovered. Offline access must be renewed online every 12 hours. Shared devices should use separate browser profiles.")}
       </p>
       {!store.unlocked &&
         store.exists !== null &&
@@ -52,10 +53,10 @@ export function DraftPanel({
           >
             <label>
               {store.exists
-                ? "Local draft passphrase"
-                : "Create local draft passphrase"}
+                ? t("draft_field_passphrase_cur", "Local draft passphrase")
+                : t("draft_field_passphrase_new", "Create local draft passphrase")}
               <input
-                aria-label="Local draft passphrase"
+                aria-label={t("draft_field_passphrase_cur", "Local draft passphrase")}
                 type="password"
                 autoComplete={
                   store.exists ? "current-password" : "new-password"
@@ -69,10 +70,10 @@ export function DraftPanel({
             </label>
             <button className="btn primary" disabled={store.busy}>
               {store.busy
-                ? "Opening…"
+                ? t("action_opening", "Opening…")
                 : store.exists
-                  ? "Unlock drafts"
-                  : "Enable offline drafts"}
+                  ? t("action_unlock_drafts", "Unlock drafts")
+                  : t("action_enable_offline_drafts", "Enable offline drafts")}
             </button>
           </form>
         )}
@@ -93,10 +94,10 @@ export function DraftPanel({
               }
               onClick={onSync}
             >
-              Sync pending drafts
+              {t("action_sync_pending_drafts", "Sync pending drafts")}
             </button>
           )}
-          {store.drafts.length === 0 && <p>No drafts saved for this seller.</p>}
+          {store.drafts.length === 0 && <p>{t("draft_empty", "No drafts saved for this seller.")}</p>}
           {store.drafts.map((draft) => (
             <article className="draft-row" key={draft.client_id}>
               <div>
@@ -106,7 +107,11 @@ export function DraftPanel({
                 <small>
                   {draft.boat_name} ·{" "}
                   <span className={`draft-state ${draft.state}`}>
-                    {draft.state}
+                    {draft.state === "synced"
+                      ? t("draft_state_synced", "Synced")
+                      : draft.state === "pending"
+                        ? t("draft_state_pending", "Pending upload")
+                        : t("draft_state_failed", "Upload failed")}
                   </span>
                 </small>
                 {draft.failure && <small role="status">{draft.failure}</small>}
@@ -117,7 +122,7 @@ export function DraftPanel({
                   disabled={store.busy}
                   onClick={() => onEdit(draft)}
                 >
-                  Edit
+                  {t("action_edit_catch", "Edit")}
                 </button>
               )}
               <button
@@ -139,7 +144,7 @@ export function DraftPanel({
                   }
                 }}
               >
-                Remove
+                {t("action_cancel", "Remove")}
               </button>
             </article>
           ))}
@@ -150,25 +155,24 @@ export function DraftPanel({
 }
 
 export function OfflineWorkspace({ owner, renderForm, onReturn }) {
+  const { t } = useLanguage();
   const store = useDraftVault(owner);
   const [form, setForm] = useState(null);
   const [message, setMessage] = useState("");
   return (
     <main className="offline-workspace">
       <header>
-        <h1>HarborX · local seller drafts</h1>
+        <h1>HarborX · {t("draft_panel_title", "local seller drafts")}</h1>
         <button className="btn secondary" onClick={onReturn}>
-          Return to sign in
+          {t("action_sign_in", "Return to sign in")}
         </button>
       </header>
       <div className="alert warning">
-        Local access only. Auctions, bids, payments and uploads require an
-        authenticated server connection.
+        {t("offline_warning", "Local access only. Auctions, bids, payments and uploads require an authenticated server connection.")}
       </div>
       {owner.expired ? (
         <p role="alert">
-          Local access expired. Reconnect and sign in as this seller to renew
-          it. Saved drafts are retained.
+          Local access expired. Reconnect and sign in as this seller to renew it. Saved drafts are retained.
         </p>
       ) : (
         <>
@@ -178,7 +182,7 @@ export function OfflineWorkspace({ owner, renderForm, onReturn }) {
             disabled={!store.unlocked || store.busy}
             onClick={() => setForm({})}
           >
-            Record offline catch
+            {t("action_register_catch", "Record offline catch")}
           </button>
         </>
       )}

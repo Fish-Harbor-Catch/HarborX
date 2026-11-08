@@ -15,6 +15,7 @@ import {
   ROLES_LABEL,
 } from "./nav-config.js";
 import { initials } from "../../api.js";
+import { useLanguage } from "../../i18n.jsx";
 
 /**
  * Sidebar Navigation Component
@@ -38,9 +39,10 @@ export function Sidebar({
   className = "",
   ...props
 }) {
+  const { lang, t } = useLanguage();
   const effectiveRole = role || user?.role || "seller";
   const primaryKeys = ROLE_NAV_ITEMS[effectiveRole] || ROLE_NAV_ITEMS.seller;
-  const roleTitle = ROLES_LABEL[effectiveRole] || effectiveRole;
+  const roleTitle = lang !== "en" ? t(`role_${effectiveRole}`, ROLES_LABEL[effectiveRole]) : (ROLES_LABEL[effectiveRole] || effectiveRole);
   const userInitials = user?.name ? initials(user.name) : "HX";
 
   // Close drawer on Escape key for keyboard accessibility
@@ -85,7 +87,7 @@ export function Sidebar({
       <aside
         id="harbor-navigation"
         className={`sidebar ${isOpen ? "open" : ""} ${isCollapsed ? "collapsed" : ""} ${className}`.trim()}
-        aria-label="Harbor navigation"
+        aria-label={t("nav_harbor_nav", "Harbor navigation")}
         {...props}
       >
         <div className="sidebar-header">
@@ -95,21 +97,26 @@ export function Sidebar({
               type="button"
               className="sidebar-close-btn"
               onClick={onClose}
-              aria-label="Close navigation drawer"
-              title="Close menu"
+              aria-label={t("action_close", "Close navigation drawer")}
+              title={t("action_close", "Close menu")}
             >
               <X size={18} aria-hidden="true" />
             </button>
           )}
         </div>
 
-        {!isCollapsed && <div className="workspace-label">HARBOR WORKSPACE</div>}
+        {!isCollapsed && (
+          <div className="workspace-label">
+            {lang !== "en" ? t("nav_harbor_workspace", "HARBOR WORKSPACE") : "HARBOR WORKSPACE"}
+          </div>
+        )}
 
-        <nav aria-label="Harbor operations">
+        <nav aria-label={t("nav_harbor_workspace", "Harbor operations")}>
           {primaryKeys.map((key) => {
             const item = NAV[key];
             if (!item) return null;
-            const [label, Icon] = item;
+            const [baseLabel, Icon] = item;
+            const label = lang !== "en" ? t(`nav_${key}`, baseLabel) : baseLabel;
             const isActive = page === key;
 
             return (
@@ -121,7 +128,7 @@ export function Sidebar({
                 aria-current={isActive ? "page" : undefined}
                 title={isCollapsed ? label : undefined}
               >
-                <Icon size={19} aria-hidden="true" />
+                <Icon size={20} aria-hidden="true" />
                 <span className="nav-label">{label}</span>
                 {key === "auctions" && liveCount > 0 && (
                   <span className="nav-badge" aria-label={`${liveCount} live auctions`}>
@@ -132,8 +139,8 @@ export function Sidebar({
                   <i
                     className="nav-dot"
                     role="status"
-                    aria-label="Buyers awaiting verification"
-                    title="Buyers awaiting verification"
+                    aria-label={t("helper_buyer_unverified", "Buyers awaiting verification")}
+                    title={t("helper_buyer_unverified", "Buyers awaiting verification")}
                   />
                 )}
               </button>
@@ -141,13 +148,18 @@ export function Sidebar({
           })}
         </nav>
 
-        {!isCollapsed && <div className="workspace-label second">WORKSPACE</div>}
+        {!isCollapsed && (
+          <div className="workspace-label second">
+            {lang !== "en" ? t("nav_general_workspace", "WORKSPACE") : "WORKSPACE"}
+          </div>
+        )}
 
-        <nav aria-label="General workspace">
+        <nav aria-label={t("nav_general_workspace", "General workspace")}>
           {SECONDARY_NAV_ITEMS.map((key) => {
             const item = NAV[key];
             if (!item) return null;
-            const [label, Icon] = item;
+            const [baseLabel, Icon] = item;
+            const label = lang !== "en" ? t(`nav_${key}`, baseLabel) : baseLabel;
             const isActive = page === key;
 
             return (
@@ -159,7 +171,7 @@ export function Sidebar({
                 aria-current={isActive ? "page" : undefined}
                 title={isCollapsed ? label : undefined}
               >
-                <Icon size={19} aria-hidden="true" />
+                <Icon size={20} aria-hidden="true" />
                 <span className="nav-label">{label}</span>
               </button>
             );
@@ -170,10 +182,10 @@ export function Sidebar({
           {!isCollapsed && (
             <div className="harbor-help">
               <LifeBuoy size={22} aria-hidden="true" />
-              <strong>Your harbor, connected.</strong>
-              <p>Clear records. Confident trading.</p>
+              <strong>{t("auth_feature_trace_title", "Your harbor, connected.")}</strong>
+              <p>{t("auth_feature_trace_desc", "Clear records. Confident trading.")}</p>
               <button type="button" onClick={handleRules}>
-                Auction rules <ArrowUpRight size={14} aria-hidden="true" />
+                {t("settings_rules_heading", "Auction rules")} <ArrowUpRight size={14} aria-hidden="true" />
               </button>
             </div>
           )}
@@ -184,7 +196,7 @@ export function Sidebar({
               className="sidebar-user"
               onClick={() => handleNavClick("settings")}
               aria-label={`User profile for ${user.name}, open settings`}
-              title="Open account settings"
+              title={t("nav_settings", "Open account settings")}
             >
               <span className="avatar" aria-hidden="true">
                 {userInitials}
@@ -195,7 +207,7 @@ export function Sidebar({
                   <small>{roleTitle}</small>
                 </span>
               )}
-              {!isCollapsed && <Settings size={16} aria-hidden="true" />}
+              {!isCollapsed && <Settings size={17} aria-hidden="true" />}
             </button>
           )}
 

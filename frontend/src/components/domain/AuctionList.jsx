@@ -3,6 +3,7 @@ import { Search, MapPin } from "lucide-react";
 import { LotCard } from "./LotCard.jsx";
 import { Card } from "../ui/Card.jsx";
 import { EmptyState } from "../ui/EmptyState.jsx";
+import { useLanguage } from "../../i18n.jsx";
 
 /**
  * Modernized Auction and Catch List component.
@@ -10,6 +11,7 @@ import { EmptyState } from "../ui/EmptyState.jsx";
  * and responsive lot card grid.
  */
 export function AuctionList({ lots, search, setSearch, onOpen, role, type }) {
+  const { lang, t } = useLanguage();
   const [status, setStatus] = useState("all");
   const [harbor, setHarbor] = useState("all");
   const [sort, setSort] = useState("newest");
@@ -51,8 +53,8 @@ export function AuctionList({ lots, search, setSearch, onOpen, role, type }) {
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search fish, lot ID or boat…"
-            aria-label="Search auction lots"
+            placeholder={t("list_search_placeholder", "Search fish, lot ID or boat…")}
+            aria-label={t("list_search_placeholder", "Search auction lots")}
           />
         </div>
         <div className="filter-controls">
@@ -63,12 +65,16 @@ export function AuctionList({ lots, search, setSearch, onOpen, role, type }) {
               value={harbor}
               onChange={(e) => setHarbor(e.target.value)}
             >
-              <option value="all">All harbors</option>
-              {availableHarbors.map((h) => (
-                <option key={h} value={h}>
-                  {h}
-                </option>
-              ))}
+              <option value="all">{t("list_all_harbors", "All harbors")}</option>
+              {availableHarbors.map((h) => {
+                const harborKey = h.toLowerCase().replace(/\s+/g, "_");
+                const label = t(`harbor_${harborKey}`, h);
+                return (
+                  <option key={h} value={h}>
+                    {label}
+                  </option>
+                );
+              })}
             </select>
           </div>
           <select
@@ -76,8 +82,8 @@ export function AuctionList({ lots, search, setSearch, onOpen, role, type }) {
             value={sort}
             onChange={(e) => setSort(e.target.value)}
           >
-            <option value="newest">Newest first</option>
-            <option value="price">Price: low to high</option>
+            <option value="newest">{t("list_sort_newest", "Newest first")}</option>
+            <option value="price">{t("list_sort_price", "Price: low to high")}</option>
           </select>
         </div>
       </div>
@@ -87,13 +93,13 @@ export function AuctionList({ lots, search, setSearch, onOpen, role, type }) {
           const count =
             s === "all"
               ? lots.length
-              : lots.filter((l) => l.status === s).length;
+                : lots.filter((l) => l.status === s).length;
           const label =
             s === "all"
-              ? "All lots"
+              ? t("list_all_lots", "All lots")
               : s === "pending"
-                ? "Awaiting review"
-                : s[0].toUpperCase() + s.slice(1);
+                ? t("status_pending", "Awaiting review")
+                : t(`status_${s}`, s[0].toUpperCase() + s.slice(1));
 
           return (
             <button
@@ -119,8 +125,8 @@ export function AuctionList({ lots, search, setSearch, onOpen, role, type }) {
       ) : (
         <Card>
           <EmptyState
-            title="No catches found"
-            text="Try another filter, or check back when new catches arrive."
+            title={t("list_empty_title", "No catches found")}
+            text={t("list_empty_desc", "Try another filter, or check back when new catches arrive.")}
           />
         </Card>
       )}

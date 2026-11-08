@@ -1,4 +1,5 @@
 import React, { forwardRef } from "react";
+import { useLanguage } from "../../i18n.jsx";
 
 /**
  * Reusable Badge component for HarborX entity statuses and category tags.
@@ -13,7 +14,9 @@ export const Badge = forwardRef(function Badge(
   { status = "", variant, showDot = true, children, className = "", ...props },
   ref,
 ) {
+  const { t } = useLanguage();
   const effectiveStatus = variant || status || "";
+  const rawKey = String(effectiveStatus).toLowerCase().replaceAll(" ", "_").replaceAll("-", "_");
   const statusClass = effectiveStatus
     ? String(effectiveStatus)
         .toLowerCase()
@@ -25,10 +28,20 @@ export const Badge = forwardRef(function Badge(
     .filter(Boolean)
     .join(" ");
 
+  const rawText = children !== undefined ? children : (status || variant);
+  let displayText = rawText;
+  if (typeof rawText === "string") {
+    const textKey = rawText.toLowerCase().replaceAll(" ", "_").replaceAll("-", "_");
+    const trans = t(`status_${textKey}`, null) || t(`status_${rawKey}`, null);
+    if (trans) {
+      displayText = trans;
+    }
+  }
+
   return (
     <span ref={ref} className={combinedClassName} {...props}>
       {showDot && <i aria-hidden="true" />}
-      {children || status || variant}
+      {displayText}
     </span>
   );
 });
