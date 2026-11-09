@@ -154,8 +154,8 @@ test("DemoRibbon.jsx distinguishes demo sessions and preserves role switching", 
   );
 
   assert.match(code, /demo-ribbon/);
-  assert.match(code, /DEMO WORKSPACE/);
-  assert.match(code, /Sample records ·/);
+  assert.match(code, /Sample environment/);
+  assert.match(code, /no real transactions/);
   assert.match(code, /Switch role/);
   assert.match(code, /onSwitchRole/);
 });

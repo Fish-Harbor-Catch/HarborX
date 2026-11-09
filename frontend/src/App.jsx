@@ -30,6 +30,7 @@ import {
   WifiOff,
   RefreshCw,
   Eye,
+  EyeOff,
   Mail,
   LockKeyhole,
   UserRound,
@@ -82,6 +83,8 @@ import {
   SettingsScreen,
 } from "./screens/index.js";
 import PwaStatus from "./PwaStatus.jsx";
+import LoginSlideshow from "./LoginSlideshow.jsx";
+import "./auth.css";
 import {
   activeOfflineOwner,
   verifyDraftOwner,
@@ -108,12 +111,26 @@ const rolesLabel = {
   buyer: "Buyer",
 };
 
+// Local-only credentials mirror backend/src/seed.js. Vite removes this object
+// from production bundles; the API health flag must also enable the panel.
+const LOCAL_DEMO = import.meta.env.DEV
+  ? {
+      password: "HarborXDemo2026!",
+      accounts: [
+        { role: "seller", label: "Seller", email: "seller@harborx.demo" },
+        { role: "buyer", label: "Buyer", email: "buyer@harborx.demo" },
+        { role: "admin", label: "Manager", email: "admin@harborx.demo" },
+      ],
+    }
+  : null;
+
 function Auth({ onLogin, toast, demo }) {
-  const { lang, t } = useLanguage();
+  const { t } = useLanguage();
   const [register, setRegister] = useState(false),
     [busy, setBusy] = useState(false),
     [email, setEmail] = useState(""),
     [password, setPassword] = useState(""),
+    [showPassword, setShowPassword] = useState(false),
     [role, setRole] = useState("buyer");
   async function submit(e) {
     e.preventDefault();
@@ -140,248 +157,283 @@ function Auth({ onLogin, toast, demo }) {
       setBusy(false);
     }
   }
-  function fill(r) {
-    setEmail(`${r}@harborx.demo`);
-    setPassword("HarborXDemo2026!");
-    setRegister(false);
+  function fillDemo(account) {
+    setEmail(account.email);
+    setPassword(LOCAL_DEMO.password);
+    setShowPassword(false);
+  }
+  function toggleRegistration() {
+    setRegister((value) => !value);
+    setShowPassword(false);
   }
   return (
-    <div className="auth-page">
-      <section className="auth-story">
-        <Logo light />
-        <div className="auth-story-body">
-          <span className="eyebrow light-text">{t("auth_eyebrow", "WELCOME TO HARBORX")}</span>
-          <h1>
-            Fresh catch.
-            <br />
-            Fair bids.
-            <br />
-            <em>Connected harbors.</em>
-          </h1>
-          <p>
-            {t("auth_story_desc", "Digital harbor auction management for Sri Lanka’s coastal fishing communities. Record catches, conduct multi-round bidding, and settle payments.")}
-          </p>
-          <HarborArt />
-          <div className="auth-feature">
-            <ShieldCheck size={22} />
-            <div>
-              <strong>{t("auth_feature_trace_title", "Verified dockside auctions")}</strong>
-              <span>{t("auth_feature_trace_desc", "Transparent bidding from boat arrival to invoice settlement.")}</span>
-            </div>
+    <main className="auth-page auth-split">
+      <LoginSlideshow />
+      <section className="auth-form-wrap" aria-labelledby="auth-heading">
+        <div className="auth-content">
+          <div className="auth-top">
+            <LanguageSwitcher />
           </div>
-        </div>
-        <small>{t("auth_community_tagline", "Coastal Fish Auction & Catch Management System")}</small>
-      </section>
-      <section className="auth-form-wrap">
-        <div className="auth-top">
-          <LanguageSwitcher />
-          <span>{register ? t("auth_already_prompt", "Already have an account?") : t("auth_new_prompt", "New to HarborX?")}</span>
-          <button className="text-btn" onClick={() => setRegister(!register)}>
-            {register ? t("action_sign_in", "Sign in") : t("action_create_account", "Create an account")}{" "}
-            <ArrowUpRight size={15} />
-          </button>
-        </div>
-        <form className="auth-form" onSubmit={submit}>
-          <span className="auth-anchor">
-            <Anchor size={27} />
-          </span>
-          <span className="eyebrow">{t("auth_eyebrow", "WELCOME TO HARBORX")}</span>
-          <h2>{register ? t("auth_join", "Join the harbor community") : t("auth_welcome_back", "Welcome back.")}</h2>
-          <p>
-            {register
-              ? t("auth_join_sub", "Create your Seller or Buyer account to get started.")
-              : t("auth_welcome_back_sub", "Sign in to manage your next catch, bid, or auction.")}
-          </p>
-          {register && (
-            <>
-              <label>
-                {t("auth_name_label", "Full name")}
-                <div className="input-icon">
-                  <UserRound size={17} />
-                  <input
-                    name="name"
-                    required
-                    minLength={2}
-                    placeholder={t("auth_name_placeholder", "Your full name")}
-                  />
-                </div>
-              </label>
-
-              <div className="role-selector-field">
-                <span className="field-label-text">
-                  {t("auth_role_prompt", "Choose your harbor role:")}
-                </span>
-                <input type="hidden" name="role" value={role} />
-                <div className="role-cards" role="radiogroup" aria-label="Harbor role">
-                  <button
-                    type="button"
-                    role="radio"
-                    aria-checked={role === "seller"}
-                    className={`role-card ${role === "seller" ? "selected" : ""}`}
-                    onClick={() => setRole("seller")}
-                  >
-                    <div className="role-card-icon seller">
-                      <Ship size={24} aria-hidden="true" />
-                    </div>
-                    <div className="role-card-content">
-                      <strong>{t("auth_role_seller", "Seller / Fisherman")}</strong>
-                      <span>{t("auth_role_seller_desc", "I catch fish or sell my boat's harvest")}</span>
-                    </div>
-                    {role === "seller" && <Check size={18} className="role-card-check" aria-hidden="true" />}
-                  </button>
-
-                  <button
-                    type="button"
-                    role="radio"
-                    aria-checked={role === "buyer"}
-                    className={`role-card ${role === "buyer" ? "selected" : ""}`}
-                    onClick={() => setRole("buyer")}
-                  >
-                    <div className="role-card-icon buyer">
-                      <Fish size={24} aria-hidden="true" />
-                    </div>
-                    <div className="role-card-content">
-                      <strong>{t("auth_role_buyer", "Buyer / Trader")}</strong>
-                      <span>{t("auth_role_buyer_desc", "I bid on catches and buy seafood")}</span>
-                    </div>
-                    {role === "buyer" && <Check size={18} className="role-card-check" aria-hidden="true" />}
-                  </button>
-                </div>
-              </div>
-
-              {role === "seller" && (
+          <div className="auth-brand">
+            <Logo />
+          </div>
+          <form className="auth-form" onSubmit={submit}>
+            <h1 id="auth-heading">
+              {register
+                ? t("auth_create_heading", "Create your account")
+                : t("auth_signin_heading", "Sign in to HarborX")}
+            </h1>
+            <p>
+              {register
+                ? t(
+                    "auth_create_intro",
+                    "Choose your role and enter your details.",
+                  )
+                : t(
+                    "auth_signin_intro",
+                    "Sri Lanka's Digital Fish Auction Platform.",
+                  )}
+            </p>
+            {register && (
+              <>
                 <label>
-                  {t("auth_boat_label", "Boat name / registration")}
+                  {t("auth_name_label", "Full name")}
                   <div className="input-icon">
-                    <Ship size={17} />
+                    <UserRound size={17} />
                     <input
-                      name="boat_name"
-                      placeholder={t("auth_boat_placeholder", "e.g. Ocean Pearl LK-2048")}
+                      name="name"
+                      required
+                      minLength={2}
+                      placeholder={t("auth_name_placeholder", "Your full name")}
                     />
                   </div>
                 </label>
-              )}
-              <label>
-                {t("auth_phone_label", "Phone number")}
-                <div className="input-icon">
-                  <Phone size={17} />
-                  <input name="phone" type="tel" placeholder={t("auth_phone_placeholder", "+94 77 123 4567")} />
-                </div>
-              </label>
-            </>
-          )}
-          <label>
-            {t("auth_email_label", "Email address")}
-            <div className="input-icon">
-              <Mail size={17} />
-              <input
-                type="email"
-                autoComplete="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder={t("auth_email_placeholder", "you@example.com")}
-              />
-            </div>
-          </label>
-          <label>
-            {t("auth_pass_label", "Password")}
-            <div className="input-icon">
-              <LockKeyhole size={17} />
-              <input
-                type="password"
-                required
-                minLength={register ? 12 : 1}
-                maxLength={128}
-                autoComplete={register ? "new-password" : "current-password"}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder={
-                  register ? t("auth_pass_new_placeholder", "At least 12 characters") : t("auth_pass_cur_placeholder", "Enter your password")
-                }
-              />
-            </div>
-          </label>
-          {register && (
-            <small className="muted">
-              {t("auth_buyer_verification_notice", "Buyers need manager verification before placing bids. Admin accounts are created separately.")}
-            </small>
-          )}
-          <button className="btn primary full" disabled={busy}>
-            {busy ? t("action_please_wait", "Please wait…") : register ? t("action_create_account", "Create account") : t("action_sign_in", "Sign in")}
-            <ArrowRight size={17} />
-          </button>
-          {demo && (
-            <div className="demo-box" role="region" aria-label={t("auth_demo_title", "Explore demo")}>
-              <div className="demo-header">
-                <strong className="demo-title">{t("auth_demo_title", "Explore demo")}</strong>
-                <span className="demo-subtitle">{t("auth_demo_subtitle", "Choose a role")}</span>
-              </div>
 
-              <div className="demo-roles" role="radiogroup" aria-label={t("auth_demo_title", "Explore demo")}>
-                {[
-                  {
-                    id: "seller",
-                    icon: Ship,
-                    titleKey: "auth_demo_seller",
-                    fallbackTitle: "Seller",
-                    descKey: "auth_demo_seller_desc",
-                    fallbackDesc: "Sell your fish",
-                  },
-                  {
-                    id: "buyer",
-                    icon: Fish,
-                    titleKey: "auth_demo_buyer",
-                    fallbackTitle: "Buyer",
-                    descKey: "auth_demo_buyer_desc",
-                    fallbackDesc: "Buy fish at auction",
-                  },
-                  {
-                    id: "admin",
-                    icon: Gavel,
-                    titleKey: "auth_demo_admin",
-                    fallbackTitle: "Auction Manager",
-                    descKey: "auth_demo_admin_desc",
-                    fallbackDesc: "Manage fish auctions",
-                  },
-                ].map(({ id, icon: RoleIcon, titleKey, fallbackTitle, descKey, fallbackDesc }) => {
-                  const isSelected = email === `${id}@harborx.demo`;
-                  return (
+                <div className="role-selector-field">
+                  <span className="field-label-text">
+                    {t("auth_role_prompt", "Choose your harbor role:")}
+                  </span>
+                  <input type="hidden" name="role" value={role} />
+                  <div
+                    className="role-cards"
+                    role="radiogroup"
+                    aria-label="Harbor role"
+                  >
                     <button
-                      key={id}
                       type="button"
                       role="radio"
-                      className={`demo-role-card ${isSelected ? "selected" : ""}`}
-                      onClick={() => fill(id)}
-                      aria-checked={isSelected}
+                      aria-checked={role === "seller"}
+                      className={`role-card ${role === "seller" ? "selected" : ""}`}
+                      onClick={() => setRole("seller")}
                     >
-                      <div className={`demo-role-icon ${id}`}>
-                        <RoleIcon size={22} aria-hidden="true" />
+                      <div className="role-card-icon seller">
+                        <Ship size={24} aria-hidden="true" />
                       </div>
-                      <div className="demo-role-text">
-                        <strong className="demo-role-title">{t(titleKey, fallbackTitle)}</strong>
-                        <span className="demo-role-desc">{t(descKey, fallbackDesc)}</span>
-                      </div>
-                      {isSelected && (
-                        <span className="demo-role-check" aria-hidden="true">
-                          <Check size={11} strokeWidth={2.5} />
+                      <div className="role-card-content">
+                        <strong>
+                          {t("auth_role_seller", "Seller / Fisherman")}
+                        </strong>
+                        <span>
+                          {t(
+                            "auth_role_seller_desc",
+                            "I catch fish or sell my boat's harvest",
+                          )}
                         </span>
+                      </div>
+                      {role === "seller" && (
+                        <Check
+                          size={18}
+                          className="role-card-check"
+                          aria-hidden="true"
+                        />
                       )}
                     </button>
-                  );
-                })}
+
+                    <button
+                      type="button"
+                      role="radio"
+                      aria-checked={role === "buyer"}
+                      className={`role-card ${role === "buyer" ? "selected" : ""}`}
+                      onClick={() => setRole("buyer")}
+                    >
+                      <div className="role-card-icon buyer">
+                        <Fish size={24} aria-hidden="true" />
+                      </div>
+                      <div className="role-card-content">
+                        <strong>
+                          {t("auth_role_buyer", "Buyer / Trader")}
+                        </strong>
+                        <span>
+                          {t(
+                            "auth_role_buyer_desc",
+                            "I bid on catches and buy seafood",
+                          )}
+                        </span>
+                      </div>
+                      {role === "buyer" && (
+                        <Check
+                          size={18}
+                          className="role-card-check"
+                          aria-hidden="true"
+                        />
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                {role === "seller" && (
+                  <label>
+                    {t("auth_boat_label", "Boat name / registration")}
+                    <div className="input-icon">
+                      <Ship size={17} />
+                      <input
+                        name="boat_name"
+                        placeholder={t(
+                          "auth_boat_placeholder",
+                          "e.g. Ocean Pearl LK-2048",
+                        )}
+                      />
+                    </div>
+                  </label>
+                )}
+                <label>
+                  {t("auth_phone_label", "Phone number")}
+                  <div className="input-icon">
+                    <Phone size={17} />
+                    <input
+                      name="phone"
+                      type="tel"
+                      placeholder={t(
+                        "auth_phone_placeholder",
+                        "+94 77 123 4567",
+                      )}
+                    />
+                  </div>
+                </label>
+              </>
+            )}
+            <label>
+              {t("auth_email_label", "Email address")}
+              <div className="input-icon">
+                <Mail size={17} />
+                <input
+                  type="email"
+                  autoComplete="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder={t("auth_email_placeholder", "you@example.com")}
+                />
+              </div>
+            </label>
+            <div className="auth-password-field">
+              <label htmlFor="auth-password">
+                {t("auth_pass_label", "Password")}
+              </label>
+              <div className="input-icon auth-password">
+                <LockKeyhole size={17} />
+                <input
+                  id="auth-password"
+                  type={showPassword ? "text" : "password"}
+                  required
+                  minLength={register ? 12 : 1}
+                  maxLength={128}
+                  autoComplete={register ? "new-password" : "current-password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder={
+                    register
+                      ? t("auth_pass_new_placeholder", "At least 12 characters")
+                      : t("auth_pass_cur_placeholder", "Enter your password")
+                  }
+                />
+                <button
+                  type="button"
+                  className="auth-password-toggle"
+                  aria-label={
+                    showPassword
+                      ? t("auth_hide_password", "Hide password")
+                      : t("auth_show_password", "Show password")
+                  }
+                  aria-controls="auth-password"
+                  aria-pressed={showPassword}
+                  onClick={() => setShowPassword((value) => !value)}
+                >
+                  {showPassword ? (
+                    <EyeOff size={19} aria-hidden="true" />
+                  ) : (
+                    <Eye size={19} aria-hidden="true" />
+                  )}
+                </button>
               </div>
             </div>
-          )}
-          <div className="auth-foot">
-            <ShieldCheck size={14} /> {t("auth_secure_access", "Authorized harbor access only")}
+            {register && (
+              <small className="muted">
+                {t(
+                  "auth_buyer_verification_notice",
+                  "Buyers need manager verification before placing bids. Admin accounts are created separately.",
+                )}
+              </small>
+            )}
+            <button className="btn primary full" disabled={busy}>
+              {busy
+                ? t("action_please_wait", "Please wait…")
+                : register
+                  ? t("action_create_account", "Create account")
+                  : t("action_sign_in", "Sign in")}
+            </button>
+          </form>
+          <div className="auth-registration">
+            <span>
+              {register
+                ? t("auth_already_prompt", "Already have an account?")
+                : t("auth_new_prompt", "New to HarborX?")}
+            </span>
+            <button
+              type="button"
+              className="text-btn"
+              onClick={toggleRegistration}
+              disabled={busy}
+            >
+              {register
+                ? t("action_sign_in", "Sign in")
+                : t("action_create_account", "Create account")}
+            </button>
           </div>
-        </form>
-        <footer>
-          © {new Date().getFullYear()} HarborX · {t("auth_footer_tag", "Fish Harbor Management")}
-        </footer>
+          {import.meta.env.DEV && demo && !register && (
+            <section
+              className="auth-local-demo"
+              aria-labelledby="local-demo-heading"
+            >
+              <span id="local-demo-heading" className="auth-local-demo-badge">
+                 DEMO
+              </span>
+              <p>Choose a role to fill the sign-in details</p>
+              <div
+                className="auth-local-demo-roles"
+                role="group"
+                aria-label="Demo sign-in role"
+              >
+                {LOCAL_DEMO.accounts.map((account) => (
+                  <button
+                    key={account.role}
+                    type="button"
+                    aria-pressed={
+                      email === account.email &&
+                      password === LOCAL_DEMO.password
+                    }
+                    disabled={busy}
+                    onClick={() => fillDemo(account)}
+                  >
+                    {account.label}
+                  </button>
+                ))}
+              </div>
+            </section>
+          )}
+        </div>
       </section>
-    </div>
+    </main>
   );
 }
 
@@ -710,13 +762,6 @@ function HarborApp() {
       : role === "seller"
         ? [
             {
-              label: t("overview_stat_total_sales", "Total sales"),
-              value: `LKR ${money(sales)}`,
-              sub: t("overview_stat_total_sales_sub", "Gross completed auction sales"),
-              icon: TrendingUp,
-              color: "teal",
-            },
-            {
               label: t("overview_stat_my_catches", "My catches"),
               value: own.length,
               sub: `${own.filter((l) => l.status === "pending").length} ${t("overview_stat_my_catches_sub", "{count} awaiting review").replace("{count}", "").trim()}`,
@@ -725,10 +770,10 @@ function HarborApp() {
             },
             {
               label: t("overview_stat_active_auctions", "Active auctions"),
-              value: own.filter((l) => l.status === "live").length,
+              value: own.filter((l) => l.status === "live" && new Date(l.round_ends_at) > new Date()).length,
               sub: t("overview_stat_active_auctions_sub", "Currently in bidding"),
               icon: Gavel,
-              color: "purple",
+              color: "teal",
             },
             {
               label: t("overview_stat_payments_pending", "Payments pending"),
@@ -736,6 +781,13 @@ function HarborApp() {
               sub: t("overview_stat_payments_pending_sub", "Payments due"),
               icon: Wallet,
               color: "amber",
+            },
+            {
+              label: t("overview_completed_sales", "Completed sales"),
+              value: own.filter((l) => l.status === "closed").length,
+              sub: `LKR ${money(sales)}`,
+              icon: TrendingUp,
+              color: "teal",
             },
           ]
         : [
@@ -749,14 +801,14 @@ function HarborApp() {
             {
               label: t("overview_stat_bids_placed", "Bids placed"),
               value: bids.length,
-              sub: `${new Set(bids.map((b) => b.lot_id)).size} ${t("overview_stat_bids_placed_sub", "{count} active bids leading").replace("{count}", "").trim()}`,
+              sub: t("overview_participated_count", "{count} auctions participated", { count: new Set(bids.map((b) => b.lot_id)).size }),
               icon: Layers,
               color: "blue",
             },
             {
               label: t("overview_stat_won_lots", "Won lots"),
               value: won.length,
-              sub: t("overview_stat_won_lots_sub", "Awaiting payment settlement"),
+              sub: t("overview_won_summary", "Successful auctions"),
               icon: ShieldCheck,
               color: "purple",
             },
@@ -954,7 +1006,7 @@ function HarborApp() {
           )}
           <footer className="app-footer">
             <span>
-              © {new Date().getFullYear()} HarborX · {t("auth_footer_tag", "Fish Harbor Management")}
+              © {new Date().getFullYear()} HarborX
             </span>
             <span>
               <i className={error ? "warning-dot" : ""} />
@@ -1312,7 +1364,10 @@ function LotModal({ id, user, close, run, busy, onEdit, toast, online }) {
         <>
           <div className="detail-top">
             <div className="detail-art">
-              <FishArt type={l.image_key} large />
+              <span className="catch-placeholder detail-placeholder" aria-label={t("catch_no_photo", "No catch photo supplied")}>
+                <Fish size={52} strokeWidth={1.25} aria-hidden="true" />
+                <small>{t("catch_no_photo", "No catch photo supplied")}</small>
+              </span>
               <div>
                 <Badge status={active ? "live" : l.status} />
                 <span>
