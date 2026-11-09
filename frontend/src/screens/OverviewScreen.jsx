@@ -1,28 +1,19 @@
 import React from "react";
-import {
-  Plus,
-  Clock,
-  ArrowRight,
-  Activity,
-  ChevronRight,
-} from "lucide-react";
+import { Plus, ArrowRight, Clock, MapPin, Fish } from "lucide-react";
 import {
   PageHeader,
   PageTitle,
-  PageDescription,
   PageActions,
 } from "../components/ui/PageContainer.jsx";
 import { Card, CardHeader } from "../components/ui/Card.jsx";
 import { Button } from "../components/ui/Button.jsx";
+import { Badge } from "../components/ui/Badge.jsx";
 import { EmptyState } from "../components/ui/EmptyState.jsx";
-import { HarborArt, LotCard, ActivityList } from "../components/domain/index.js";
+import { ActivityList } from "../components/domain/index.js";
+import { money } from "../api.js";
 import { useLanguage } from "../i18n.jsx";
 
-/**
- * Screen 1: Modernized Overview Dashboard.
- * Displays welcome greeting, hero banner, metrics statistics grid,
- * latest live/seller catches, recent workspace activity, and auction pipeline.
- */
+/** Operational overview; every metric and listing comes from authenticated API data. */
 export function OverviewScreen({
   user,
   role = "seller",
@@ -35,28 +26,22 @@ export function OverviewScreen({
   onSelectLot,
   onRegisterCatch,
 }) {
-  const { lang, t } = useLanguage();
-
-  const eyebrow =
-    role === "admin"
-      ? t("overview_eyebrow_admin", "HARBOR OPERATIONS")
-      : role === "seller"
-        ? t("overview_eyebrow_seller", "SELLER PORTAL")
-        : t("overview_eyebrow_buyer", "BUYER PORTAL");
-
-  const firstName = user?.name ? user.name.split(" ")[0] : "Captain";
-  const activeLots = role === "seller" ? own : live;
+  const { t } = useLanguage();
+  const recent = role === "seller" ? own : role === "admin" ? visible : live;
+  const latest = [...recent]
+    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+    .slice(0, 5);
+  const title =
+    role === "seller"
+      ? t("overview_catch_heading", "Catch overview")
+      : role === "admin"
+        ? t("overview_operations_heading", "Harbor operations")
+        : t("overview_auction_heading", "Auction overview");
 
   return (
     <>
       <PageHeader>
-        <PageTitle
-          eyebrow={eyebrow}
-          description={t("overview_description", "Harbor auction activity, catch status, and trading summary.")}
-        >
-          {t("overview_greeting", `Welcome back, ${firstName}.`, { name: firstName })}
-        </PageTitle>
-
+        <PageTitle description={user?.name}>{title}</PageTitle>
         <PageActions>
           {role === "seller" ? (
             <Button
@@ -67,48 +52,13 @@ export function OverviewScreen({
               {t("action_register_catch", "Register catch")}
             </Button>
           ) : (
-            <span className="date-pill">
-              <Clock size={15} aria-hidden="true" />
-              {new Date().toLocaleDateString("en-GB", {
-                timeZone: "Asia/Colombo",
-                day: "numeric",
-                month: "short",
-                year: "numeric",
-              })}
-            </span>
+            <Button variant="primary" onClick={() => onNavigate("auctions")}>
+              {t("action_explore_auctions", "View auctions")}{" "}
+              <ArrowRight size={16} aria-hidden="true" />
+            </Button>
           )}
         </PageActions>
       </PageHeader>
-
-      <section className="hero-banner">
-        <div>
-          <div className="hero-kicker">
-            <span aria-hidden="true" /> {t("overview_hero_kicker", "DAILY OVERVIEW")}
-          </div>
-          <h2>
-            {role === "seller"
-              ? t("overview_hero_seller", "Catches and auction sales")
-              : role === "buyer"
-                ? t("overview_hero_buyer", "Live auctions and bidding")
-                : t("overview_hero_admin", "Harbor auctions and catch inspection")}
-          </h2>
-          <p>
-            {role === "admin"
-              ? t("overview_hero_desc_admin", "Supervise arrivals, inspect weights, manage bidding rounds, and record payments.")
-              : t("overview_hero_desc_general", "Track dockside auction rounds, weight inspection, and payment settlement.")}
-          </p>
-          <Button
-            variant="white"
-            onClick={() => onNavigate(role === "seller" ? "catches" : "auctions")}
-          >
-            {role === "seller"
-              ? t("action_view_my_catches", "View my catches")
-              : t("action_explore_auctions", "View auctions")}
-            <ArrowRight size={16} aria-hidden="true" />
-          </Button>
-        </div>
-        <HarborArt />
-      </section>
 
       <section className="stats-grid" aria-label="Key statistics">
         {stats.map(({ label, value, sub, icon: Icon, color }) => (
@@ -116,7 +66,7 @@ export function OverviewScreen({
             <div className="stat-top">
               <span>{label}</span>
               <div className={`stat-icon ${color}`}>
-                <Icon size={20} aria-hidden="true" />
+                <Icon size={17} aria-hidden="true" />
               </div>
             </div>
             <strong>{value}</strong>
@@ -125,54 +75,120 @@ export function OverviewScreen({
         ))}
       </section>
 
+      <Card className="stage-panel">
+        <div className="pipeline" aria-label="Auction pipeline stages">
+          {[
+            ["pending", t("status_pending", "Awaiting review")],
+            ["scheduled", t("status_scheduled", "Scheduled")],
+            ["live", t("status_live", "Live auction")],
+            ["closed", t("status_closed", "Completed")],
+          ].map(([status, label]) => (
+            <div key={status}>
+              <span className={`stage-dot ${status}`} aria-hidden="true" />
+              <strong>{label}</strong>
+              <span className="stage-value">
+                {visible.filter((l) => l.status === status).length}
+              </span>
+            </div>
+          ))}
+        </div>
+      </Card>
+
       <div className="overview-grid">
         <Card className="auctions-panel">
           <CardHeader>
-            <div>
-              <h2>
-                {role === "seller"
-                  ? t("overview_panel_seller_catches", "Your latest catches")
+            <h2>
+              {role === "seller"
+                ? t("overview_panel_seller_catches", "Your latest catches")
+                : role === "admin"
+                  ? t("overview_recent_lots", "Recent auction lots")
                   : t("overview_panel_live_harbor", "Live at the harbor")}
-                <span className="count">{activeLots.length}</span>
-              </h2>
-              <p>
-                {role === "seller"
-                  ? t("overview_panel_seller_sub", "Recent catches submitted from your boat.")
-                  : t("overview_panel_buyer_sub", "Active auctions open for bidding.")}
-              </p>
-            </div>
+              <span className="count">{recent.length}</span>
+            </h2>
             <Button
               variant="text"
               onClick={() =>
                 onNavigate(role === "seller" ? "catches" : "auctions")
               }
             >
-              {t("action_view_all", "View all")}
+              {t("action_view_all", "View all")}{" "}
               <ArrowRight size={15} aria-hidden="true" />
             </Button>
           </CardHeader>
-
-          {activeLots.length > 0 ? (
-            <div className="lot-grid compact">
-              {activeLots.slice(0, 2).map((l) => (
-                <LotCard key={l.id} lot={l} onOpen={() => onSelectLot(l.id)} />
-              ))}
+          {latest.length ? (
+            <div className="recent-lots">
+              {latest.map((lot) => {
+                const active =
+                  lot.status === "live" &&
+                  new Date(lot.round_ends_at) > new Date();
+                return (
+                  <button
+                    className="recent-lot"
+                    key={lot.id}
+                    onClick={() => onSelectLot(lot.id)}
+                    aria-label={`${t("action_view_lot", "View lot")} ${lot.species} ${lot.code}`}
+                  >
+                    <span className="recent-fish" aria-hidden="true">
+                      <Fish size={26} strokeWidth={1.4} />
+                    </span>
+                    <span className="recent-species">
+                      <small>{lot.code}</small>
+                      <strong>{lot.species}</strong>
+                      <span>
+                        <MapPin size={12} aria-hidden="true" /> {lot.harbor}
+                        <span className="recent-mobile-weight">
+                          {" "}
+                          · {money(lot.weight)} kg
+                        </span>
+                      </span>
+                    </span>
+                    <span className="recent-quantity">
+                      <strong>{money(lot.weight)} kg</strong>
+                      <small>{lot.boat_name}</small>
+                    </span>
+                    <span className="recent-price">
+                      <strong>
+                        LKR {money(lot.highest_bid || lot.base_price)}
+                      </strong>
+                      <small>{t("lot_card_per_kg", "/ kg")}</small>
+                    </span>
+                    <Badge
+                      status={
+                        active
+                          ? "live"
+                          : lot.status === "live"
+                            ? "scheduled"
+                            : lot.status
+                      }
+                    >
+                      {lot.status === "live" && !active
+                        ? t("helper_round_ended", "Round ended")
+                        : t(`status_${lot.status}`, lot.status)}
+                    </Badge>
+                    <ArrowRight
+                      size={16}
+                      className="recent-arrow"
+                      aria-hidden="true"
+                    />
+                  </button>
+                );
+              })}
             </div>
           ) : (
             <EmptyState
-              title={t("list_empty_title", "No active catches yet")}
-              text={t("list_empty_desc", "Published catches will appear here.")}
+              title={t("list_empty_title", "No catches found")}
+              text={t(
+                "list_empty_desc",
+                "Try another filter, or check back when new catches arrive.",
+              )}
             />
           )}
         </Card>
 
         <Card className="activity-panel">
           <CardHeader>
-            <div>
-              <h2>{t("overview_panel_recent_activity", "Recent activity")}</h2>
-              <p>{t("overview_panel_recent_activity_sub", "Latest auction and payment events.")}</p>
-            </div>
-            <Activity size={18} aria-hidden="true" />
+            <h2>{t("overview_panel_recent_activity", "Recent activity")}</h2>
+            <Clock size={17} aria-hidden="true" />
           </CardHeader>
           <ActivityList events={events.slice(0, 4)} />
           <Button
@@ -180,48 +196,11 @@ export function OverviewScreen({
             className="activity-link"
             onClick={() => onNavigate("activity")}
           >
-            {t("action_view_activity", "View activity log")}
+            {t("action_view_activity", "View activity log")}{" "}
             <ArrowRight size={15} aria-hidden="true" />
           </Button>
         </Card>
       </div>
-
-      <Card>
-        <CardHeader>
-          <div>
-            <h2>
-              {role === "admin"
-                ? t("overview_panel_pipeline_admin", "Auction pipeline")
-                : t("overview_panel_pipeline_general", "Your trading summary")}
-            </h2>
-            <p>{t("overview_panel_pipeline_sub", "Catches grouped by current auction stage.")}</p>
-          </div>
-          <span className="muted small-text">LKR · Sri Lanka</span>
-        </CardHeader>
-        <div className="pipeline" aria-label="Auction pipeline stages">
-          {[
-            ["pending", t("status_pending", "Awaiting review")],
-            ["scheduled", t("status_scheduled", "Scheduled")],
-            ["live", t("status_live", "In auction")],
-            ["closed", t("status_closed", "Completed")],
-          ].map(([s, label], i) => (
-            <div key={s}>
-              <span className={`pipeline-number p${i}`}>
-                {visible.filter((l) => l.status === s).length}
-              </span>
-              <div>
-                <strong>{label}</strong>
-                <small>
-                  {s === "closed"
-                    ? t("overview_pipeline_sales_recorded", "Sales recorded")
-                    : t("overview_pipeline_auction_lots", "Auction lots")}
-                </small>
-              </div>
-              {i < 3 && <ChevronRight size={20} aria-hidden="true" />}
-            </div>
-          ))}
-        </div>
-      </Card>
     </>
   );
 }

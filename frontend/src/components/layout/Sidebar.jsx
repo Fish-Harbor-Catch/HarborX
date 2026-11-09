@@ -97,7 +97,7 @@ export function Sidebar({
               type="button"
               className="sidebar-close-btn"
               onClick={onClose}
-              aria-label={t("action_close", "Close navigation drawer")}
+              aria-label={t("nav_close_drawer", "Close navigation drawer")}
               title={t("action_close", "Close menu")}
             >
               <X size={18} aria-hidden="true" />
@@ -126,7 +126,8 @@ export function Sidebar({
                 className={isActive ? "active" : ""}
                 onClick={() => handleNavClick(key)}
                 aria-current={isActive ? "page" : undefined}
-                title={isCollapsed ? label : undefined}
+                title={label}
+                aria-label={label}
               >
                 <Icon size={20} aria-hidden="true" />
                 <span className="nav-label">{label}</span>
@@ -169,7 +170,8 @@ export function Sidebar({
                 className={isActive ? "active" : ""}
                 onClick={() => handleNavClick(key)}
                 aria-current={isActive ? "page" : undefined}
-                title={isCollapsed ? label : undefined}
+                title={label}
+                aria-label={label}
               >
                 <Icon size={20} aria-hidden="true" />
                 <span className="nav-label">{label}</span>
@@ -180,14 +182,11 @@ export function Sidebar({
 
         <div className="sidebar-bottom">
           {!isCollapsed && (
-            <div className="harbor-help">
-              <LifeBuoy size={22} aria-hidden="true" />
-              <strong>{t("sidebar_rules_title", "Auction rules")}</strong>
-              <p>{t("sidebar_rules_desc", "Review codified bidding, inspection, and settlement rules.")}</p>
-              <button type="button" onClick={handleRules}>
-                {t("settings_rules_heading", "Auction rules")} <ArrowUpRight size={14} aria-hidden="true" />
-              </button>
-            </div>
+            <button type="button" className="harbor-help" onClick={handleRules}>
+              <LifeBuoy size={17} aria-hidden="true" />
+              {t("settings_rules_heading", "Auction rules")}
+              <ArrowUpRight size={14} aria-hidden="true" />
+            </button>
           )}
 
           {user && (

@@ -57,7 +57,7 @@ test("domain component files exist and export expected components", async () => 
   assert.match(domainIndex, /export\s+\{\s*Timer\s*\}\s+from\s+["']\.\/Timer\.jsx["']/);
 });
 
-test("OverviewScreen.jsx includes PageHeader, hero banner, stats grid, and pipeline", async () => {
+test("OverviewScreen.jsx includes operational headings, recent catches, stats, and pipeline", async () => {
   const code = await readFile(
     new URL("../src/screens/OverviewScreen.jsx", import.meta.url),
     "utf8",
@@ -65,13 +65,13 @@ test("OverviewScreen.jsx includes PageHeader, hero banner, stats grid, and pipel
 
   assert.match(code, /PageHeader/);
   assert.match(code, /PageTitle/);
-  assert.match(code, /Welcome back/);
-  assert.match(code, /hero-banner/);
+  assert.match(code, /Catch overview/);
+  assert.doesNotMatch(code, /hero-banner/);
   assert.match(code, /stats-grid/);
   assert.match(code, /overview-grid/);
   assert.match(code, /pipeline/);
-  assert.match(code, /HarborArt/);
-  assert.match(code, /LotCard/);
+  assert.doesNotMatch(code, /HarborArt/);
+  assert.match(code, /recent-lot/);
   assert.match(code, /ActivityList/);
 });
 

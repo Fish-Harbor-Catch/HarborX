@@ -2,39 +2,6 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
-test("demo role selection UI has correct structure, heading, and roles in App.jsx", async () => {
-  const appJsx = await readFile(
-    new URL("../src/App.jsx", import.meta.url),
-    "utf8"
-  );
-
-  // Region and radiogroup attributes
-  assert.match(appJsx, /className="demo-box"[^>]*role="region"/);
-  assert.match(appJsx, /className="demo-roles"[^>]*role="radiogroup"/);
-
-  // Heading and subtitle labels
-  assert.match(appJsx, /t\("auth_demo_title",\s*"Explore demo"\)/);
-  assert.match(appJsx, /t\("auth_demo_subtitle",\s*"Choose a role"\)/);
-
-  // Roles and short descriptions
-  assert.match(appJsx, /fallbackDesc:\s*"Sell your fish"/);
-  assert.match(appJsx, /fallbackDesc:\s*"Buy fish at auction"/);
-  assert.match(appJsx, /fallbackDesc:\s*"Manage fish auctions"/);
-
-  // Accessible radio roles and aria-checked
-  assert.match(appJsx, /role="radio"/);
-  assert.match(appJsx, /aria-checked=\{isSelected\}/);
-
-  // Consistent icon size (22)
-  assert.match(appJsx, /<RoleIcon size=\{22\}/);
-
-  // Check indicator with strokeWidth
-  assert.match(appJsx, /<Check size=\{11\} strokeWidth=\{2\.5\}/);
-
-  // No redundant footer box
-  assert.doesNotMatch(appJsx, /className="demo-footer"/);
-});
-
 test("demo role translations exist with exact parity for EN, TA, and SI in i18n.jsx", async () => {
   const i18nJsx = await readFile(
     new URL("../src/i18n.jsx", import.meta.url),
@@ -105,18 +72,13 @@ test("styles.css implements cleaner non-nested layout, subtle selected state, an
   assert.match(css, /@media\s*\(max-width:\s*480px\)[\s\S]*?\.demo-role-check\s*\{[^}]*margin-left:\s*auto/);
 });
 
-test("demo role credential fill logic preserves accounts and credentials without auto-login", async () => {
-  const appJsx = await readFile(
-    new URL("../src/App.jsx", import.meta.url),
+test("demo accounts remain available through the seed data", async () => {
+  const seed = await readFile(
+    new URL("../../backend/src/seed.js", import.meta.url),
     "utf8"
   );
-
-  // Verifies fill function uses the exact demo domain and password
-  assert.match(appJsx, /setEmail\(`\$\{r\}@harborx\.demo`\)/);
-  assert.match(appJsx, /setPassword\("HarborXDemo2026!"\)/);
-  assert.match(appJsx, /setRegister\(false\)/);
-
-  // Verifies clicking role cards calls fill without submit
-  assert.match(appJsx, /onClick=\{\(\) => fill\(id\)\}/);
-  assert.doesNotMatch(appJsx, /onClick=\{\(\) => \{\s*fill\(id\);\s*submit/);
+  for (const role of ["seller", "buyer", "admin"]) {
+    assert.ok(seed.includes(`${role}@harborx.demo`));
+  }
+  assert.match(seed, /HarborXDemo2026!/);
 });

@@ -116,6 +116,14 @@ export function AuctionList({ lots, search, setSearch, onOpen, role, type }) {
         })}
       </div>
 
+      <div className="listing-summary" role="status">
+        <span>{filtered.length} / {lots.length} {t("listing_catches", "catches")}</span>
+        {(search || harbor !== "all" || status !== "all") && (
+          <button className="text-btn" onClick={() => { setSearch(""); setHarbor("all"); setStatus("all"); }}>
+            {t("listing_clear", "Clear filters")}
+          </button>
+        )}
+      </div>
       {filtered.length ? (
         <div className="lot-grid">
           {filtered.map((l) => (

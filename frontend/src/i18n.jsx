@@ -15,6 +15,28 @@ export const LANGUAGES = [
 
 export const TRANSLATIONS = {
   en: {
+    nav_close_drawer: "Close navigation drawer",
+    overview_participated_count: "{count} auctions participated",
+    overview_won_summary: "Successful auctions",
+
+    // Operational workspace presentation
+    product_descriptor: "Catch & auction management",
+    auth_create_heading: "Create your account",
+    auth_signin_heading: "Sign in to HarborX",
+    auth_create_intro: "Choose your role and enter your details.",
+    auth_signin_intro: "Sri Lanka's Digital Fish Auction Platform.",
+    auth_show_password: "Show password",
+    auth_hide_password: "Hide password",
+    overview_completed_sales: "Completed sales",
+    overview_catch_heading: "Catch overview",
+    overview_operations_heading: "Harbor operations",
+    overview_auction_heading: "Auction overview",
+    overview_recent_lots: "Recent auction lots",
+    sample_environment: "Sample environment · no real transactions",
+    catch_no_photo: "No catch photo supplied",
+    listing_catches: "catches",
+    listing_clear: "Clear filters",
+
     // Navigation & Workspace Shell
     nav_overview: "Overview",
     nav_auctions: "Auctions",
@@ -502,6 +524,28 @@ export const TRANSLATIONS = {
   },
 
   ta: {
+    nav_close_drawer: "வழிசெலுத்தல் மெனுவை மூடு",
+    overview_participated_count: "பங்கேற்ற ஏலங்கள்: {count}",
+    overview_won_summary: "வெற்றிகரமான ஏலங்கள்",
+
+    // Operational workspace presentation
+    product_descriptor: "மீன்பிடி மற்றும் ஏல மேலாண்மை",
+    auth_create_heading: "உங்கள் கணக்கை உருவாக்கவும்",
+    auth_signin_heading: "HarborX இல் உள்நுழையவும்",
+    auth_create_intro: "உங்கள் பங்கைத் தேர்ந்தெடுத்து விவரங்களை உள்ளிடவும்.",
+    auth_signin_intro: "இலங்கையின் டிஜிட்டல் மீன் ஏலத் தளம்.",
+    auth_show_password: "கடவுச்சொல்லைக் காட்டு",
+    auth_hide_password: "கடவுச்சொல்லை மறை",
+    overview_completed_sales: "முடிந்த விற்பனைகள்",
+    overview_catch_heading: "மீன்பிடி கண்ணோட்டம்",
+    overview_operations_heading: "துறைமுக செயல்பாடுகள்",
+    overview_auction_heading: "ஏலக் கண்ணோட்டம்",
+    overview_recent_lots: "அண்மைய ஏலத் தொகுதிகள்",
+    sample_environment: "மாதிரி சூழல் · உண்மையான பரிவர்த்தனைகள் இல்லை",
+    catch_no_photo: "மீன்பிடி புகைப்படம் வழங்கப்படவில்லை",
+    listing_catches: "மீன்பிடிகள்",
+    listing_clear: "வடிகட்டிகளை நீக்கு",
+
     // Navigation & Workspace Shell
     nav_overview: "மேலோட்டம்",
     nav_auctions: "ஏலங்கள்",
@@ -989,6 +1033,28 @@ export const TRANSLATIONS = {
   },
 
   si: {
+    nav_close_drawer: "සංචාලන මෙනුව වසන්න",
+    overview_participated_count: "සහභාගි වූ වෙන්දේසි: {count}",
+    overview_won_summary: "ජයගත් වෙන්දේසි",
+
+    // Operational workspace presentation
+    product_descriptor: "මත්ස්‍ය අස්වැන්න සහ වෙන්දේසි කළමනාකරණය",
+    auth_create_heading: "ඔබේ ගිණුම සාදන්න",
+    auth_signin_heading: "HarborX වෙත පිවිසෙන්න",
+    auth_create_intro: "ඔබේ කාර්යභාරය තෝරා විස්තර ඇතුළත් කරන්න.",
+    auth_signin_intro: "ශ්‍රී ලංකාවේ ඩිජිටල් මත්ස්‍ය වෙන්දේසි වේදිකාව.",
+    auth_show_password: "මුරපදය පෙන්වන්න",
+    auth_hide_password: "මුරපදය සඟවන්න",
+    overview_completed_sales: "සම්පූර්ණ විකුණුම්",
+    overview_catch_heading: "අස්වැන්න පිළිබඳ දළ විශ්ලේෂණය",
+    overview_operations_heading: "වරාය මෙහෙයුම්",
+    overview_auction_heading: "වෙන්දේසි දළ විශ්ලේෂණය",
+    overview_recent_lots: "මෑත වෙන්දේසි තොග",
+    sample_environment: "ආදර්ශ පරිසරය · සැබෑ ගනුදෙනු නොමැත",
+    catch_no_photo: "අස්වැන්නේ ඡායාරූපයක් සපයා නැත",
+    listing_catches: "අස්වැන්න තොග",
+    listing_clear: "පෙරහන් ඉවත් කරන්න",
+
     // Navigation & Workspace Shell
     nav_overview: "දළ විශ්ලේෂණය",
     nav_auctions: "වෙන්දේසි",

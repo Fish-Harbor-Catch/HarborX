@@ -37,7 +37,9 @@ export const pwaOptions = {
   },
   workbox: {
     cacheId: "harborx-shell",
-    globPatterns: ["**/*.{js,css,html,svg,png,webmanifest}"],
+    globPatterns: ["**/*.{js,css,html,svg,png,jpg,webmanifest}"],
+    // Include the supplied full-resolution login photograph in the offline shell.
+    maximumFileSizeToCacheInBytes: 6 * 1024 * 1024,
     navigateFallback: "index.html",
     navigateFallbackDenylist: [/^\/api(?:\/|$)/],
     cleanupOutdatedCaches: true,

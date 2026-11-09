@@ -51,6 +51,7 @@ export function Modal({
       }
 
       if (e.key === "Tab" && dialogRef.current) {
+        if (e.altKey || e.ctrlKey || e.metaKey) return;
         const controls = [
           ...dialogRef.current.querySelectorAll(
             'button:not(:disabled), a[href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex="-1"])',
@@ -59,16 +60,15 @@ export function Modal({
 
         if (controls.length === 0) return;
 
-        const first = controls[0];
-        const last = controls[controls.length - 1];
-
-        if (e.shiftKey && document.activeElement === first) {
-          e.preventDefault();
-          last.focus();
-        } else if (!e.shiftKey && document.activeElement === last) {
-          e.preventDefault();
-          first.focus();
-        }
+        // WebKit may skip buttons during native Tab navigation depending on
+        // system keyboard preferences. Move focus explicitly on every Tab so
+        // the dialog remains contained on those systems as well.
+        const current = controls.indexOf(document.activeElement);
+        const next = e.shiftKey
+          ? (current <= 0 ? controls.length - 1 : current - 1)
+          : (current + 1) % controls.length;
+        e.preventDefault();
+        controls[next].focus();
       }
     };
 

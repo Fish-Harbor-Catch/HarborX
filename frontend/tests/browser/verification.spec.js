@@ -87,7 +87,7 @@ async function signIn(page, role = "seller") {
   );
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
   await (await login).finished();
-  await expect(page.getByRole("heading", { name: /Welcome back/ })).toBeVisible();
+  await expect(page.locator("#main-content h1")).toBeVisible();
   return (await (await login).json()).user;
 }
 
@@ -119,8 +119,9 @@ test.describe("PHASE 2: Desktop Browser Testing (1440x900)", () => {
     await signIn(page, "admin");
 
     // 1. Dashboard rendering
-    await expect(page.getByRole("heading", { name: /Welcome back, Nimal/ })).toBeVisible();
-    await expect(page.locator(".hero-banner")).toBeVisible();
+    await expect(page.locator("#main-content h1")).toBeVisible();
+    await expect(page.locator(".hero-banner")).toHaveCount(0);
+    await expect(page.locator(".stats-grid").first()).toBeVisible();
     await expect(page.locator(".stats-grid")).toBeVisible();
     await expect(page.locator(".pipeline")).toBeVisible();
     await noOverflow(page, "Admin Overview");
@@ -180,8 +181,9 @@ test.describe("PHASE 2: Desktop Browser Testing (1440x900)", () => {
     await signIn(page, "seller");
 
     // 1. Seller Dashboard
-    await expect(page.getByRole("heading", { name: /Welcome back, Kasun/ })).toBeVisible();
-    await expect(page.locator(".hero-banner")).toBeVisible();
+    await expect(page.locator("#main-content h1")).toBeVisible();
+    await expect(page.locator(".hero-banner")).toHaveCount(0);
+    await expect(page.locator(".stats-grid").first()).toBeVisible();
     await expect(page.locator(".stats-grid")).toBeVisible();
     await noOverflow(page, "Seller Overview");
     await page.screenshot({ path: join(SCREENSHOT_DIR, "desktop-seller-01-overview.png"), fullPage: true });
@@ -227,8 +229,9 @@ test.describe("PHASE 2: Desktop Browser Testing (1440x900)", () => {
     await signIn(page, "buyer");
 
     // 1. Buyer Dashboard
-    await expect(page.getByRole("heading", { name: /Welcome back, Aarsan/ })).toBeVisible();
-    await expect(page.locator(".hero-banner")).toBeVisible();
+    await expect(page.locator("#main-content h1")).toBeVisible();
+    await expect(page.locator(".hero-banner")).toHaveCount(0);
+    await expect(page.locator(".stats-grid").first()).toBeVisible();
     await expect(page.locator(".stats-grid")).toBeVisible();
     await noOverflow(page, "Buyer Overview");
     await page.screenshot({ path: join(SCREENSHOT_DIR, "desktop-buyer-01-overview.png"), fullPage: true });
@@ -245,7 +248,7 @@ test.describe("PHASE 2: Desktop Browser Testing (1440x900)", () => {
     // 3. Lot Details Modal
     const lotCard = page.locator(".lot-card").first();
     await expect(lotCard).toBeVisible();
-    await lotCard.getByRole("button", { name: "View lot" }).click();
+    await lotCard.getByRole("button", { name: "View lot", exact: true }).click();
     await expect(page.getByRole("dialog")).toBeVisible();
     await expect(page.locator(".detail-top")).toBeVisible();
     await page.screenshot({ path: join(SCREENSHOT_DIR, "desktop-buyer-02-lot-detail-modal.png") });
@@ -375,7 +378,7 @@ test.describe("PHASE 4: Functional & Accessibility Checks", () => {
     await page.waitForTimeout(300);
 
     // Verify empty state is displayed gracefully
-    await expect(page.getByRole("heading", { name: "No catches found" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "No catches match your filters" })).toBeVisible();
     await page.screenshot({ path: join(SCREENSHOT_DIR, "a11y-empty-state-search.png") });
 
     // Clear search
@@ -394,9 +397,11 @@ test.describe("PHASE 4: Functional & Accessibility Checks", () => {
       await noOverflow(page, `Auctions filter tab ${i}`);
     }
 
+    await filterTabs.first().click();
+
     // 3. Modal Focus Trap and Escape dismissal
     const firstLot = page.locator(".lot-card").first();
-    await firstLot.getByRole("button", { name: "View lot" }).click();
+    await firstLot.getByRole("button", { name: "View lot", exact: true }).click();
     const modal = page.getByRole("dialog");
     await expect(modal).toBeVisible();
     await expect(page.locator(".detail-top")).toBeVisible();

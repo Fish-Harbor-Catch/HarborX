@@ -1,6 +1,5 @@
 import React from "react";
-import { Ship, MapPin, Clock, ArrowRight } from "lucide-react";
-import { FishArt } from "./FishArt.jsx";
+import { Ship, MapPin, Clock, ArrowRight, Fish } from "lucide-react";
 import { Timer } from "./Timer.jsx";
 import { Badge } from "../ui/Badge.jsx";
 import { Button } from "../ui/Button.jsx";
@@ -28,7 +27,10 @@ export function LotCard({ lot: l, onOpen }) {
         onClick={onOpen}
         aria-label={`${t("action_view_lot", "View")} ${l.species} ${l.code}`}
       >
-        <FishArt type={l.image_key} />
+        <span className="catch-placeholder" aria-label={t("catch_no_photo", "No catch photo supplied")}>
+          <Fish size={42} strokeWidth={1.25} aria-hidden="true" />
+          <small>{t("catch_no_photo", "No catch photo supplied")}</small>
+        </span>
         <span className="lot-grade">
           {t("lot_card_grade", `Grade ${l.grade}`, { grade: l.grade })}
         </span>

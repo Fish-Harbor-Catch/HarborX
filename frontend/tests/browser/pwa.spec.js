@@ -10,7 +10,7 @@ async function signIn(page, role = "seller") {
   const login = page.waitForResponse(response => response.url().endsWith("/api/auth/login") && response.request().method() === "POST");
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
   await (await login).finished();
-  await expect(page.getByRole("heading", { name: /Welcome back/ })).toBeVisible();
+  await expect(page.locator("#main-content h1")).toBeVisible();
   return (await (await login).json()).user;
 }
 async function go(page, name) {
@@ -78,14 +78,14 @@ test("legacy migration, offline cold reopen, catch recording and safe manual ret
   await page.close();
   const offline = await context.newPage();
   await offline.goto("/");
-  await expect(offline.getByRole("heading", { name: "HarborX · local seller drafts" })).toBeVisible();
+  await expect(offline.getByRole("heading", { name: "HarborX · Local catch drafts" })).toBeVisible();
   await expect(offline.locator(".draft-row")).toHaveCount(0);
   await offline.getByLabel("Local draft passphrase").fill("wrong");
   await offline.getByRole("button", { name: "Unlock drafts", exact: true }).click();
   await expect(offline.getByRole("alert")).toContainText("incorrect");
   await unlock(offline);
   await expect(offline.locator(".draft-row").filter({ hasText: marker })).toHaveCount(1);
-  await offline.getByRole("button", { name: "Record offline catch" }).click();
+  await offline.getByRole("button", { name: "Register catch" }).click();
   await offline.locator('[name="weight"]').fill("55");
   await offline.locator('[name="base_price"]').fill("1200");
   await offline.locator('[name="boat_name"]').fill(`${marker}-new`);
@@ -101,8 +101,8 @@ test("legacy migration, offline cold reopen, catch recording and safe manual ret
   });
   expect(failedApi).toBe(true);
   await context.setOffline(false);
-  await offline.getByRole("button", { name: "Return to sign in" }).click();
-  await expect(offline.getByRole("heading", { name: /Welcome back/ })).toBeVisible();
+  await offline.getByRole("button", { name: "Sign in", exact: true }).click();
+  await expect(offline.locator("#main-content h1")).toBeVisible();
   await go(offline, "My catches");
   await unlock(offline);
   await offline.request.post("/__test/lose-catch-confirmation");
