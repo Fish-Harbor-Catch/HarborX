@@ -1,3 +1,8 @@
+import negomboTour from "../../negombo-fish-market-tour.jpg";
+import negomboWet from "../../negombo-fish-market-wet.jpg";
+import dimitriCoast from "../../pexels-dimitri-dim-380720-1802183.jpg";
+import romanCoast from "../../pexels-roman-odintsov-6534202.jpg";
+
 export const photos = [
   {
     src: "/public-home/images/matara-harbor.jpg",
@@ -30,6 +35,30 @@ export const photos = [
     location: "Sri Lanka, Southern coast",
     category: "Our traditions",
     position: "50% 45%",
+  },
+];
+// Preserve the original three hero photographs; other shared photos stay separate.
+export const heroPhotos = [
+  ...photos.slice(0, 3),
+  {
+    src: negomboTour,
+    location: "Negombo fish market",
+    position: "50% 55%",
+  },
+  {
+    src: negomboWet,
+    location: "Negombo wet fish market",
+    position: "50% 50%",
+  },
+  {
+    src: dimitriCoast,
+    location: "Coastal shoreline · illustrative",
+    position: "50% 50%",
+  },
+  {
+    src: romanCoast,
+    location: "Coastal shoreline · illustrative",
+    position: "60% 50%",
   },
 ];
 export const services = [

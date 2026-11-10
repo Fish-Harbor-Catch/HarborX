@@ -7,10 +7,24 @@
  */
 
 :root {
+  /* Shared identity, taken from the public homepage. Status colors stay separate. */
+  --hx-brand-teal: #087f7e;
+  --hx-brand-teal-hover: #056965;
+  --hx-brand-navy: #102f3d;
+  --hx-brand-ink: #183b46;
+  --hx-brand-seafoam: #a6e7d8;
+  --hx-brand-canvas: #f6f8f5;
+  --hx-brand-muted: #536b73;
+  --hx-brand-border: #e0e8e7;
+  --hx-brand-radius: 6px;
+  --hx-brand-mark-radius: 4px;
+  --hx-font-family-display:
+    Georgia, "Times New Roman", "Noto Serif Tamil", "Noto Serif Sinhala",
+    "Tamil MN", "Sinhala MN", serif;
   /* --- Colors: Brand Navy (Deep Maritime Theme) --- */
   --hx-color-navy-900: #081f35;
   --hx-color-navy-800: #0a2c4b;
-  --hx-color-navy-700: #0d3558;
+  --hx-color-navy-700: var(--hx-brand-navy);
   --hx-color-navy-600: #19374d;
   --hx-color-navy-500: #20384c;
   --hx-color-navy-400: #445f72;
@@ -21,8 +35,8 @@
 
   /* --- Colors: Coastal Teal (Interactive & Action Identity) --- */
   --hx-color-teal-800: #075a61;
-  --hx-color-teal-700: #08727a;
-  --hx-color-teal-600: #10858c;
+  --hx-color-teal-700: var(--hx-brand-teal-hover);
+  --hx-color-teal-600: var(--hx-brand-teal);
   --hx-color-teal-500: #1ca6a7;
   --hx-color-teal-400: #42bdbb;
   --hx-color-teal-300: #86d2cb;
@@ -31,7 +45,7 @@
   --hx-color-teal-50: #e7f5f3;
 
   /* --- Semantic Colors: Surfaces & Canvases --- */
-  --hx-color-canvas: var(--hx-color-navy-50);
+  --hx-color-canvas: var(--hx-brand-canvas);
   --hx-color-surface: #ffffff;
   --hx-color-surface-subtle: #f8fafb;
   --hx-color-surface-muted: #eef2f5;
@@ -46,16 +60,16 @@
   --hx-color-secondary-text: #476071;
 
   /* --- Semantic Colors: Text Hierarchy --- */
-  --hx-color-text-primary: var(--hx-color-navy-500);
-  --hx-color-text-heading: var(--hx-color-navy-600);
+  --hx-color-text-primary: var(--hx-brand-ink);
+  --hx-color-text-heading: var(--hx-brand-navy);
   --hx-color-text-secondary: #476071;
-  --hx-color-text-muted: var(--hx-color-navy-300);
+  --hx-color-text-muted: var(--hx-brand-muted);
   --hx-color-text-subtle: #98a5af;
   --hx-color-text-inverse: #ffffff;
   --hx-color-text-inverse-muted: #a1b9cc;
 
   /* --- Semantic Colors: Borders --- */
-  --hx-color-border-default: #e5ebef;
+  --hx-color-border-default: var(--hx-brand-border);
   --hx-color-border-subtle: #edf1f4;
   --hx-color-border-strong: var(--hx-color-navy-100);
   --hx-color-border-focus: var(--hx-color-teal-600);
@@ -84,8 +98,8 @@
 
   /* --- Typography Scale --- */
   --hx-font-family:
-    Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-    "Helvetica Neue", Arial, sans-serif;
+    Arial, Helvetica, "Noto Sans Tamil", "Noto Sans Sinhala", "Tamil MN",
+    "Sinhala MN", sans-serif;
   --hx-font-size-xs: 10px;
   --hx-font-size-sm: 12px;
   --hx-font-size-base: 13px;
@@ -142,11 +156,11 @@
   --hx-shadow-lg: 0 10px 30px rgba(13, 53, 88, 0.12);
   --hx-shadow-toast: 0 10px 50px rgba(13, 53, 88, 0.16);
   --hx-shadow-modal: 0 25px 100px rgba(0, 21, 43, 0.23);
-  --hx-shadow-focus: 0 0 0 3px rgba(16, 133, 140, 0.15);
+  --hx-shadow-focus: 0 0 0 3px rgb(8 127 126 / 18%);
 
   /* --- Focus & Interaction States --- */
-  --hx-focus-ring-color: #42bdbb;
-  --hx-focus-ring-shadow: 0 0 0 3px rgba(16, 133, 140, 0.15);
+  --hx-focus-ring-color: var(--hx-brand-teal);
+  --hx-focus-ring-shadow: var(--hx-shadow-focus);
   --hx-focus-ring-offset: 3px;
   --hx-transition-fast: 0.15s ease;
   --hx-transition-normal: 0.2s ease;

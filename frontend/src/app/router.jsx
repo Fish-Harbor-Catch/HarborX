@@ -3,6 +3,7 @@ import { Route, Routes, useLocation } from "react-router";
 import Navigate from "./NavigationRedirect.jsx";
 import { LoginRoute, RegisterRoute } from "../features/auth/AuthPages.jsx";
 import ProtectedRoute from "./ProtectedRoute.jsx";
+import PageTransition from "../components/transitions/PageTransition.jsx";
 import NotFoundPage from "./NotFoundPage.jsx";
 import {
   WORKSPACE_ROUTES,
@@ -37,59 +38,61 @@ export default function ApplicationRoutes({
   preferOffline = false,
 }) {
   return (
-    <Routes>
-      <Route
-        path="/"
-        element={
-          preferOffline ? (
-            <Navigate reason="offline" to="/offline" replace />
-          ) : (
-            <Suspense
-              fallback={
-                <div className="loading" role="status">
-                  Loading HarborX…
-                </div>
-              }
-            >
-              <PublicHomePage user={user} />
-            </Suspense>
-          )
-        }
-      />
-      <Route
-        element={
-          <GuestRoute user={user} offline={preferOffline}>
-            {auth}
-          </GuestRoute>
-        }
-      >
-        <Route path="/login" element={<LoginRoute />} />
-        <Route path="/register" element={<RegisterRoute />} />
-      </Route>
-      <Route
-        path="/offline"
-        element={
-          offline || (
-            <Navigate
-              reason="offline"
-              to={user ? pagePath(user.role) : "/login"}
-              replace
-            />
-          )
-        }
-      />
-      {WORKSPACE_ROUTES.map(({ path, role }) => (
+    <PageTransition enabled={!user && !preferOffline}>
+      <Routes>
         <Route
-          key={path}
-          path={path}
+          path="/"
           element={
-            <ProtectedRoute user={user} role={role} offline={preferOffline}>
-              {workspace}
-            </ProtectedRoute>
+            preferOffline ? (
+              <Navigate reason="offline" to="/offline" replace />
+            ) : (
+              <Suspense
+                fallback={
+                  <div className="loading" role="status">
+                    Loading HarborX…
+                  </div>
+                }
+              >
+                <PublicHomePage user={user} />
+              </Suspense>
+            )
           }
         />
-      ))}
-      <Route path="*" element={<NotFoundPage user={user} />} />
-    </Routes>
+        <Route
+          element={
+            <GuestRoute user={user} offline={preferOffline}>
+              {auth}
+            </GuestRoute>
+          }
+        >
+          <Route path="/login" element={<LoginRoute />} />
+          <Route path="/register" element={<RegisterRoute />} />
+        </Route>
+        <Route
+          path="/offline"
+          element={
+            offline || (
+              <Navigate
+                reason="offline"
+                to={user ? pagePath(user.role) : "/login"}
+                replace
+              />
+            )
+          }
+        />
+        {WORKSPACE_ROUTES.map(({ path, role }) => (
+          <Route
+            key={path}
+            path={path}
+            element={
+              <ProtectedRoute user={user} role={role} offline={preferOffline}>
+                {workspace}
+              </ProtectedRoute>
+            }
+          />
+        ))}
+        <Route path="*" element={<NotFoundPage user={user} />} />
+      </Routes>
+    </PageTransition>
   );
 }

@@ -1,17 +1,17 @@
 /* Public homepage styles never select outside .hx-public. */
 .hx-public {
-  font-family: Arial, Helvetica, sans-serif;
-  color: #183b46;
+  font-family: var(--hx-font-family);
+  color: var(--hx-brand-ink);
   background: #fff;
   font-synthesis: none;
   font-weight: 400;
-  --navy: #102f3d;
-  --teal: #087f7e;
-  --deep-teal: #056965;
-  --muted: #667a80;
-  --line: #e0e8e7;
-  --cream: #f6f8f5;
-  --serif: Georgia, "Times New Roman", serif;
+  --navy: var(--hx-brand-navy);
+  --teal: var(--hx-brand-teal);
+  --deep-teal: var(--hx-brand-teal-hover);
+  --muted: var(--hx-brand-muted);
+  --line: var(--hx-brand-border);
+  --cream: var(--hx-brand-canvas);
+  --serif: var(--hx-font-family-display);
 }
 .hx-public * {
   box-sizing: border-box;
@@ -399,6 +399,20 @@
     rgba(8, 37, 48, 0.59) 45%,
     rgba(5, 29, 39, 0.8)
   );
+}
+/* Viewport-fixed photographs, clipped to this hero rather than the whole page.
+   Touch layouts and reduced-motion users retain the original scrolling layers. */
+@supports (clip-path: inset(0)) {
+  @media (min-width: 1025px) and (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+    .hx-public .hero {
+      clip-path: inset(0);
+    }
+    .hx-public .hero-images,
+    .hx-public .hero-shade {
+      position: fixed;
+      height: 100svh;
+    }
+  }
 }
 .hx-public .hero-copy {
   text-align: center;
