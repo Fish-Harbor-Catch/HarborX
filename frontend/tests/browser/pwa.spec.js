@@ -4,7 +4,7 @@ import { DEMO_PASSWORD } from "../../../backend/src/seed.js";
 
 const passphrase = "browser-test-local-passphrase";
 async function signIn(page, role = "seller") {
-  await page.goto("/");
+  await page.goto("/login");
   await page.getByLabel("Email address").fill(`${role}@harborx.demo`);
   await page.getByLabel("Password", { exact: true }).fill(DEMO_PASSWORD);
   const login = page.waitForResponse(response => response.url().endsWith("/api/auth/login") && response.request().method() === "POST");
@@ -31,7 +31,7 @@ async function noOverflow(page) {
 }
 
 test("manifest, worker registration, mobile layout and public-only cache", async ({ page }, testInfo) => {
-  await page.goto("/");
+  await page.goto("/login");
   await expect(page.getByRole("button", { name: "Sign in", exact: true })).toBeVisible();
   await noOverflow(page);
   const manifest = await (await page.request.get("/manifest.webmanifest")).json();
@@ -157,7 +157,7 @@ test("offline bidding is disabled and never queued", async ({ page, context }) =
 });
 
 test("an installed update waits without reloading an unsaved form", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/login");
   await ready(page);
   await page.reload();
   await expect.poll(() => page.evaluate(() => Boolean(navigator.serviceWorker.controller))).toBe(true);
@@ -170,7 +170,7 @@ test("an installed update waits without reloading an unsaved form", async ({ pag
 });
 
 test("common small screens retain usable forms without horizontal overflow", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/login");
   for (const [width, height] of [[320, 568], [360, 640], [375, 667], [430, 932], [390, 360]]) {
     await page.setViewportSize({ width, height });
     await expect(page.getByRole("button", { name: "Sign in", exact: true })).toBeVisible();
@@ -186,7 +186,7 @@ test("switching accounts in another window locks the previous seller workspace",
   await go(page, "My catches");
   await unlock(page, true);
   const other = await context.newPage();
-  await other.goto("/");
+  await other.goto("/seller/dashboard");
   await expect(other.getByRole("button", { name: "Sign out", exact: true })).toBeVisible();
   await other.getByRole("button", { name: "Sign out", exact: true }).click();
   await expect(page.getByRole("button", { name: "Sign in", exact: true })).toBeVisible();

@@ -13,7 +13,7 @@ test("production hides local demo and excludes demo credentials from JavaScript"
   page,
 }) => {
   // The existing test API reports demo:true, so this also tests the build guard.
-  await page.goto("/");
+  await page.goto("/login");
   await expect(
     page.getByRole("heading", { name: "Sign in to HarborX" }),
   ).toBeVisible();
@@ -54,7 +54,7 @@ test.describe("demo-enabled development login", () => {
         )
           loginRequests.push(request);
       });
-      await page.goto(`${vite.url}/`);
+      await page.goto(`${vite.url}/login`);
       const panel = page.getByRole("region", {
         name: "DEMO",
         exact: true,
@@ -142,7 +142,7 @@ test.describe("demo-enabled development login", () => {
   test("demo controls are compact and touch-friendly, and stay off registration", async ({
     page,
   }, testInfo) => {
-    await page.goto(`${vite.url}/`);
+    await page.goto(`${vite.url}/login`);
     const panel = page.getByRole("region", { name: "DEMO", exact: true });
     await expect(panel).toBeVisible();
     for (const width of [320, 375, 768, 1440]) {
@@ -198,7 +198,7 @@ test.describe("demo-enabled development login", () => {
           ),
         }),
       );
-      await page.goto(`${vite.url}/`);
+      await page.goto(`${vite.url}/login`);
       await expect(
         page.getByRole("heading", { name: "Sign in to HarborX" }),
       ).toBeVisible();

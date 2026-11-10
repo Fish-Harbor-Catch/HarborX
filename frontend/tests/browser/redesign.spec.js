@@ -20,7 +20,7 @@ for (const width of [375, 768, 1440]) {
       await page.setViewportSize({ width, height: 900 });
       const pageErrors = [];
       page.on("pageerror", (error) => pageErrors.push(error.message));
-      await page.goto("/");
+      await page.goto("/login");
       await expect(
         page.getByRole("heading", { name: "Sign in to HarborX" }),
       ).toBeVisible();
@@ -109,7 +109,7 @@ for (const width of [375, 768, 1440]) {
 }
 
 async function login(page, role) {
-  await page.goto("/");
+  await page.goto("/login");
   await page.getByLabel("Email address").fill(`${role}@harborx.demo`);
   await page.getByLabel("Password", { exact: true }).fill(DEMO_PASSWORD);
   await page.getByRole("button", { name: "Sign in", exact: true }).click();

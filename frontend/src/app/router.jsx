@@ -1,4 +1,4 @@
-import React from "react";
+import React, { lazy, Suspense } from "react";
 import { Route, Routes, useLocation } from "react-router";
 import Navigate from "./NavigationRedirect.jsx";
 import { LoginRoute, RegisterRoute } from "../features/auth/AuthPages.jsx";
@@ -9,6 +9,10 @@ import {
   loginDestination,
   pagePath,
 } from "./route-config.js";
+
+const PublicHomePage = lazy(
+  () => import("../features/public/PublicHomePage.jsx"),
+);
 
 function GuestRoute({ user, offline, children }) {
   const location = useLocation();
@@ -37,13 +41,19 @@ export default function ApplicationRoutes({
       <Route
         path="/"
         element={
-          <Navigate
-            reason="entry"
-            to={
-              preferOffline ? "/offline" : user ? pagePath(user.role) : "/login"
-            }
-            replace
-          />
+          preferOffline ? (
+            <Navigate reason="offline" to="/offline" replace />
+          ) : (
+            <Suspense
+              fallback={
+                <div className="loading" role="status">
+                  Loading HarborX…
+                </div>
+              }
+            >
+              <PublicHomePage user={user} />
+            </Suspense>
+          )
         }
       />
       <Route

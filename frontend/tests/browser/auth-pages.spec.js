@@ -10,7 +10,7 @@ const signIn = (page) =>
 test("switching pages retains credentials and role, masks passwords and updates URLs", async ({
   page,
 }) => {
-  await page.goto("/");
+  await page.goto("/login");
   await expect(page).toHaveURL(/\/login$/);
   await email(page).fill("switch@example.com");
   await password(page).fill("SharedPassword2026!");
@@ -71,7 +71,7 @@ for (const mode of ["login", "register"]) {
         body: JSON.stringify({ error: "Authentication test error" }),
       });
     });
-    await page.goto("/");
+    await page.goto("/login");
     if (mode === "register") {
       await createAccount(page).click();
       await page.getByLabel("Full name").fill("Auth Test");
@@ -121,7 +121,7 @@ test("registration validates required fields and password length without sending
   page.on("request", (request) => {
     if (request.url().endsWith("/api/auth/register")) requests.push(request);
   });
-  await page.goto("/");
+  await page.goto("/login");
   await createAccount(page).click();
   const submit = page
     .locator("form")
@@ -151,11 +151,11 @@ test("registration validates required fields and password length without sending
 test("registration follows the selected language across page switches", async ({
   page,
 }) => {
-  await page.goto("/");
+  await page.goto("/login");
   await createAccount(page).click();
   for (const [language, registerHeading, loginHeading] of [
-    ["தமிழ் (TA)", "உங்கள் கணக்கை உருவாக்கவும்", "HarborX இல் உள்நுழையவும்"],
-    ["සිංහල (SI)", "ඔබේ ගිණුම සාදන්න", "HarborX වෙත පිවිසෙන්න"],
+    ["தமிழ் (TAMIL)", "உங்கள் கணக்கை உருவாக்கவும்", "HarborX இல் உள்நுழையவும்"],
+    ["සිංහල (SINHALA)", "ඔබේ ගිණුම සාදන්න", "HarborX වෙත පිවිසෙන්න"],
   ]) {
     await page.getByRole("button", { name: "Select display language" }).click();
     await page.getByRole("option", { name: language, exact: true }).click();

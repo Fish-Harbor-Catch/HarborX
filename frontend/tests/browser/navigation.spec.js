@@ -219,7 +219,7 @@ test("language switching preserves the URL and continues across history navigati
   await login(page, "buyer");
   await go(page, "Auctions");
   await page.getByRole("button", { name: "Select display language" }).click();
-  await page.getByRole("option", { name: "தமிழ் (TA)", exact: true }).click();
+  await page.getByRole("option", { name: "தமிழ் (TAMIL)", exact: true }).click();
   await expect(page).toHaveURL("/buyer/auctions");
   await page.goBack();
   await expect(page).toHaveURL("/buyer/dashboard");

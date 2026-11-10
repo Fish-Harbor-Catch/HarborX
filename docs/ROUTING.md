@@ -12,7 +12,7 @@ HarborX uses React Router 7 in declarative mode with `BrowserRouter`. The browse
 | Admin               | `/admin/dashboard`, `/admin/auctions`, `/admin/users`, `/admin/payments`, `/admin/reports`, `/admin/activity`, `/admin/settings` |
 | Local seller drafts | `/offline` (requires an existing local draft owner; the existing passphrase and lease checks still apply)                        |
 
-`/` redirects to the session's dashboard, the local offline workspace, or `/login`. Unknown paths show a translated Not Found screen. The existing `overview` screen key maps to `dashboard` in URLs. `route-config.js` derives workspace routes from the existing role navigation metadata, including the shared activity and settings screens.
+`/` displays the public HarborX homepage for guests and authenticated users. When an offline draft owner is available and the existing offline preference is active, it retains the `/offline` redirect for the installed PWA. Unknown paths show a translated Not Found screen. The existing `overview` screen key maps to `dashboard` in URLs. `route-config.js` derives workspace routes from the existing role navigation metadata, including the shared activity and settings screens.
 
 ## Authentication and history
 
@@ -50,3 +50,11 @@ An additional cache-enabled Brave diagnostic exposed a different problem: a docu
 `history-restoration.spec.js` uses a real second HTTP origin for ordinary history tests. Its Chromium-only cached-document test uses the full `chromium` channel (the standalone headless shell disables BFCache), explicitly enables BFCache, and uses CDP, because [Playwright normally disables BFCache and does not support cached restores through its normal navigation tracking](https://playwright.dev/docs/navigations#backforward-cache-bfcache). The test requires a real persisted restore, pauses the new session request, checks that neither Login nor protected content appears while it is pending, then checks valid and expired sessions. This CDP-specific test is skipped on WebKit; ordinary history and delayed session tests still run there.
 
 The reported login flash was not reproduced in the current development or production builds during these checks, including isolated Brave. The cached-session defect above was separately reproduced and fixed. The recording's exact build/profile/cache state remains necessary to attribute its specific flash; it should not be assumed to have the same cause.
+
+## Integrated public homepage
+
+`features/public/PublicHomePage.jsx` is lazy-loaded by the existing root route. It reuses the application router, authenticated user and language provider. Its styles only select descendants of `.hx-public`, and its original animations use distinct keyframe names. The existing Login/Register components, session checks, role guards and login slideshow are unchanged.
+
+Only the homepage was integrated from the standalone prototype. Services, Gallery, About, How It Works and Contact navigation targets are sections on that homepage, not new public-page routes. Guest marketplace links lead to the existing `/login`; authenticated marketplace links lead to the account role’s existing auctions route. Registration links lead to the existing `/register`, where users select their role. No prototype mock authentication, sample auctions, contact form, secondary pages, router or language provider is copied. Public hero/navigation copy uses the existing language preference through a feature-local copy table; other homepage copy remains English. Existing translation dictionaries are unchanged.
+
+The original `PwaStatus` remains mounted on the homepage, preserving registration/update prompts. No service-worker caching policy or draft data is changed. Licensed photographs and credits are copied under `frontend/public/public-home/`, so the existing precache build includes them. The standalone prototype stays intact.

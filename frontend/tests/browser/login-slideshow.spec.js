@@ -26,7 +26,7 @@ async function freezeClock(page) {
 }
 
 async function ready(page) {
-  await page.goto("/");
+  await page.goto("/login");
   await expect(page.locator(".auth-slideshow img")).toHaveCount(6);
   await expect
     .poll(() =>
