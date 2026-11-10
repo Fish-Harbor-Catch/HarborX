@@ -58,7 +58,7 @@ button:disabled {
 }
 button:focus-visible,
 a:focus-visible {
-  outline: 3px solid #42bdbb;
+  outline: 3px solid var(--hx-focus-ring-color);
   outline-offset: 3px;
 }
 input:focus,
@@ -66,7 +66,7 @@ select:focus,
 textarea:focus {
   outline: 0;
   border-color: var(--teal);
-  box-shadow: 0 0 0 3px #10858c17;
+  box-shadow: var(--hx-shadow-focus);
 }
 h1,
 h2,
@@ -259,12 +259,20 @@ label > small {
   height: 40px;
   display: grid;
   place-items: center;
-  border: 1px solid #b5d7da;
-  border-radius: 10px 10px 15px 15px;
-  background: #e1f2f0;
+  border: 1px solid var(--hx-brand-teal);
+  border-radius: var(--hx-brand-mark-radius);
+  background: var(--hx-brand-teal);
+  color: #fff;
+}
+.logo-icon svg {
+  width: 32px;
+  height: 34px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.8;
 }
 .logo-x {
-  color: #1ca6a7;
+  color: var(--hx-brand-teal);
 }
 .logo small {
   display: block;
@@ -272,10 +280,13 @@ label > small {
   font-size: 7px;
   letter-spacing: 1.3px;
   margin-top: 8px;
-  color: #6c95a6;
+  color: var(--hx-brand-muted);
 }
 .logo.light {
   color: white;
+}
+.logo.light .logo-x {
+  color: var(--hx-brand-seafoam);
 }
 .logo.light .logo-icon {
   color: #a0e1dc;

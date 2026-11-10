@@ -1,17 +1,17 @@
 /* Public homepage styles never select outside .hx-public. */
 .hx-public {
-  font-family: Arial, Helvetica, sans-serif;
-  color: #183b46;
+  font-family: var(--hx-font-family);
+  color: var(--hx-brand-ink);
   background: #fff;
   font-synthesis: none;
   font-weight: 400;
-  --navy: #102f3d;
-  --teal: #087f7e;
-  --deep-teal: #056965;
-  --muted: #667a80;
-  --line: #e0e8e7;
-  --cream: #f6f8f5;
-  --serif: Georgia, "Times New Roman", serif;
+  --navy: var(--hx-brand-navy);
+  --teal: var(--hx-brand-teal);
+  --deep-teal: var(--hx-brand-teal-hover);
+  --muted: var(--hx-brand-muted);
+  --line: var(--hx-brand-border);
+  --cream: var(--hx-brand-canvas);
+  --serif: var(--hx-font-family-display);
 }
 .hx-public * {
   box-sizing: border-box;

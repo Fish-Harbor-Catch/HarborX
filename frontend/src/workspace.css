@@ -1,15 +1,15 @@
 /* Commercial workspace presentation. Behavior, storage and API contracts stay in
    their existing components; shared visual decisions use the token system. */
 :root {
-  --hx-color-navy-700: #123747;
-  --hx-color-navy-800: #102e3c;
-  --hx-color-teal-600: #087f7a;
-  --hx-color-teal-700: #076c68;
-  --hx-color-canvas: #f3f5f5;
-  --hx-color-text-primary: #263e48;
-  --hx-color-text-muted: #607581;
-  --hx-color-border-default: #dfe6e8;
-  --hx-color-text-heading: #163743;
+  --hx-color-navy-700: var(--hx-brand-navy);
+  --hx-color-navy-800: var(--hx-brand-navy);
+  --hx-color-teal-600: var(--hx-brand-teal);
+  --hx-color-teal-700: var(--hx-brand-teal-hover);
+  --hx-color-canvas: var(--hx-brand-canvas);
+  --hx-color-text-primary: var(--hx-brand-ink);
+  --hx-color-text-muted: var(--hx-brand-muted);
+  --hx-color-border-default: var(--hx-brand-border);
+  --hx-color-text-heading: var(--hx-brand-navy);
   --hx-font-size-base: 14px;
   --hx-radius-lg: 10px;
   --hx-shadow-sm: 0 1px 3px rgb(19 53 67 / 4%);
@@ -34,7 +34,7 @@ input,
 select,
 textarea {
   border-color: var(--border);
-  border-radius: 6px;
+  border-radius: var(--hx-brand-radius);
   min-height: 44px;
 }
 small {
@@ -46,7 +46,7 @@ small {
 }
 .btn {
   min-height: 44px;
-  border-radius: 6px;
+  border-radius: var(--hx-brand-radius);
   font-size: 13px;
   font-weight: 600;
   padding: 10px 16px;
@@ -296,11 +296,13 @@ small {
 }
 .logo {
   font-weight: 700;
-  letter-spacing: -0.7px;
+  letter-spacing: -1.3px;
+  color: var(--hx-brand-ink);
 }
 .logo.light .logo-icon {
-  border-color: #ffffff25;
-  background: #ffffff08;
+  border-color: var(--hx-brand-teal);
+  background: var(--hx-brand-teal);
+  color: #fff;
 }
 .logo small {
   font-size: 8px;

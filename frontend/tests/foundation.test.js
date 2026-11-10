@@ -62,10 +62,13 @@ test("tokens.css declares custom properties and maintains legacy alias compatibi
     "utf8",
   );
 
-  // HarborX tokens
-  assert.match(css, /--hx-color-navy-700:\s*#0d3558/);
-  assert.match(css, /--hx-color-teal-600:\s*#10858c/);
-  assert.match(css, /--hx-color-canvas:\s*var\(--hx-color-navy-50\)/);
+  // Shared homepage identity, including semantic aliases for the existing app.
+  assert.match(css, /--hx-brand-navy:\s*#102f3d/);
+  assert.match(css, /--hx-brand-teal:\s*#087f7e/);
+  assert.match(css, /--hx-brand-canvas:\s*#f6f8f5/);
+  assert.match(css, /--hx-color-navy-700:\s*var\(--hx-brand-navy\)/);
+  assert.match(css, /--hx-color-teal-600:\s*var\(--hx-brand-teal\)/);
+  assert.match(css, /--hx-color-canvas:\s*var\(--hx-brand-canvas\)/);
   assert.match(css, /--hx-font-size-base:\s*13px/);
   assert.match(css, /--hx-radius-sm:\s*7px/);
 
