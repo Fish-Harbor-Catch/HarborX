@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "react-router";
+import { Logo } from "../../../components/layout/Logo.jsx";
 import {
   Fish,
   Gavel,
@@ -59,17 +60,7 @@ export function Brand({ light = false }) {
       aria-label="HarborX home"
       className={`brand ${light ? "brand-light" : ""}`}
     >
-      <span className="brand-mark">
-        <svg viewBox="0 0 40 40" aria-hidden="true">
-          <path d="M10 7v26M30 7v26M10 19h20M7 27q6-7 13 0t13 0" />
-        </svg>
-      </span>
-      <span>
-        <strong>
-          Harbor<span>X</span>
-        </strong>
-        <small>THE HARBOR. CONNECTED.</small>
-      </span>
+      <Logo light={light} />
     </Link>
   );
 }

@@ -1,4 +1,8 @@
 import React from "react";
+import icon from "../../harborx-icon.svg";
+import wordmark from "../../harborx-logo.svg";
+import darkWordmark from "../../harborx-logo-dark-bg.svg";
+import "./Logo.css";
 
 /**
  * HarborX brand identity logo component.
@@ -17,16 +21,21 @@ export function Logo({
       className={`logo ${light ? "light" : ""} ${collapsed ? "collapsed" : ""} ${className}`.trim()}
       {...props}
     >
-      <span className="logo-icon" aria-hidden="true">
-        <svg viewBox="0 0 40 40" aria-hidden="true">
-          <path d="M10 7v26M30 7v26M10 19h20M7 27q6-7 13 0t13 0" />
-        </svg>
-      </span>
+      <img
+        className="logo-symbol"
+        src={icon}
+        width="96"
+        height="96"
+        alt="HarborX"
+      />
       {!collapsed && (
-        <span>
-          Harbor<span className="logo-x">X</span>
-          <small>THE HARBOR. CONNECTED.</small>
-        </span>
+        <img
+          className="logo-wordmark"
+          src={light ? darkWordmark : wordmark}
+          width="556"
+          height="168"
+          alt="HarborX"
+        />
       )}
     </div>
   );

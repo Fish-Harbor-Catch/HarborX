@@ -241,6 +241,10 @@
   gap: 10px;
   width: max-content;
   white-space: nowrap;
+  min-height: 44px;
+}
+.hx-public .brand .logo > .logo-wordmark {
+  width: 190px;
 }
 .hx-public .brand-mark {
   background: var(--teal);
@@ -1094,6 +1098,9 @@
   }
 }
 @media (max-width: 760px) {
+  .hx-public .site-header .brand .logo > .logo-wordmark {
+    width: clamp(112px, 34vw, 160px);
+  }
   .hx-public .container {
     width: calc(100% - 40px);
   }
