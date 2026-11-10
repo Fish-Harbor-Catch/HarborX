@@ -191,3 +191,34 @@ test("signing in unmounts the slideshow and clears its timer", async ({
   await page.clock.runFor(30000);
   expect(await page.evaluate(() => window.slideshowTimers.fired)).toBe(fired);
 });
+
+test("switching authentication pages preserves the slideshow and its pending deadline", async ({
+  page,
+}) => {
+  await freezeClock(page);
+  await ready(page);
+  await expect
+    .poll(() => page.evaluate(() => window.slideshowTimers.pending.size))
+    .toBe(1);
+  await page.locator(".auth-slideshow").evaluate((element) => {
+    window.originalSlideshow = element;
+  });
+  await page.clock.runFor(3000);
+  await page
+    .getByRole("button", { name: "Create account", exact: true })
+    .click();
+  await current(page, 0);
+  await page.clock.runFor(1000);
+  await current(page, 1);
+  await page.getByRole("button", { name: "Sign in", exact: true }).click();
+  expect(
+    await page
+      .locator(".auth-slideshow")
+      .evaluate((element) => element === window.originalSlideshow),
+  ).toBe(true);
+  await page.clock.runFor(4000);
+  await current(page, 2);
+  expect(await page.evaluate(() => window.slideshowTimers.pending.size)).toBe(
+    1,
+  );
+});
