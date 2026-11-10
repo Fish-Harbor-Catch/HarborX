@@ -400,6 +400,20 @@
     rgba(5, 29, 39, 0.8)
   );
 }
+/* Viewport-fixed photographs, clipped to this hero rather than the whole page.
+   Touch layouts and reduced-motion users retain the original scrolling layers. */
+@supports (clip-path: inset(0)) {
+  @media (min-width: 1025px) and (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+    .hx-public .hero {
+      clip-path: inset(0);
+    }
+    .hx-public .hero-images,
+    .hx-public .hero-shade {
+      position: fixed;
+      height: 100svh;
+    }
+  }
+}
 .hx-public .hero-copy {
   text-align: center;
   position: relative;
