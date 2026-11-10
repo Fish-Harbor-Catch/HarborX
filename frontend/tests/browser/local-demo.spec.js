@@ -1,6 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { createServer } from "vite";
-import { fileURLToPath } from "node:url";
+import { startDevServer } from "./dev-server.js";
 import { readFile, readdir } from "node:fs/promises";
 import { DEMO_PASSWORD } from "../../../backend/src/seed.js";
 
@@ -14,7 +13,7 @@ test("production hides local demo and excludes demo credentials from JavaScript"
   page,
 }) => {
   // The existing test API reports demo:true, so this also tests the build guard.
-  await page.goto("/");
+  await page.goto("/login");
   await expect(
     page.getByRole("heading", { name: "Sign in to HarborX" }),
   ).toBeVisible();
@@ -35,18 +34,7 @@ test.describe("demo-enabled development login", () => {
   let vite;
   test.beforeAll(async () => {
     // Reuse the existing disposable seeded API, serving the actual source in DEV.
-    vite = await createServer({
-      root: fileURLToPath(new URL("../../", import.meta.url)),
-      server: {
-        host: "127.0.0.1",
-        port: 5173,
-        strictPort: true,
-        proxy: {
-          "/api": { target: "http://127.0.0.1:4173", changeOrigin: false },
-        },
-      },
-    });
-    await vite.listen();
+    vite = await startDevServer();
   });
   test.afterAll(async () => {
     await vite?.close();
@@ -66,7 +54,7 @@ test.describe("demo-enabled development login", () => {
         )
           loginRequests.push(request);
       });
-      await page.goto("http://127.0.0.1:5173/");
+      await page.goto(`${vite.url}/login`);
       const panel = page.getByRole("region", {
         name: "DEMO",
         exact: true,
@@ -113,6 +101,7 @@ test.describe("demo-enabled development login", () => {
       expect(login.ok()).toBe(true);
       expect((await login.json()).user.role).toBe(account.role);
       expect(loginRequests).toHaveLength(1);
+      await expect(page).toHaveURL(`${vite.url}/${account.role}/dashboard`);
       await expect(page.locator("#main-content h1")).toBeVisible();
       if (page.viewportSize().width <= 760) {
         await page
@@ -130,6 +119,22 @@ test.describe("demo-enabled development login", () => {
           .locator(".sidebar nav")
           .getByRole("button", { name: expectedNavigation, exact: true }),
       ).toHaveCount(1);
+      await page
+        .locator(".sidebar nav")
+        .getByRole("button", { name: expectedNavigation, exact: true })
+        .click();
+      const destination = { seller: "catches", buyer: "bids", admin: "users" }[
+        account.role
+      ];
+      await expect(page).toHaveURL(
+        `${vite.url}/${account.role}/${destination}`,
+      );
+      await page.goBack();
+      await expect(page).toHaveURL(`${vite.url}/${account.role}/dashboard`);
+      await page.goForward();
+      await expect(page).toHaveURL(
+        `${vite.url}/${account.role}/${destination}`,
+      );
       expect(errors).toEqual([]);
     });
   }
@@ -137,7 +142,7 @@ test.describe("demo-enabled development login", () => {
   test("demo controls are compact and touch-friendly, and stay off registration", async ({
     page,
   }, testInfo) => {
-    await page.goto("http://127.0.0.1:5173/");
+    await page.goto(`${vite.url}/login`);
     const panel = page.getByRole("region", { name: "DEMO", exact: true });
     await expect(panel).toBeVisible();
     for (const width of [320, 375, 768, 1440]) {
@@ -193,7 +198,7 @@ test.describe("demo-enabled development login", () => {
           ),
         }),
       );
-      await page.goto("http://127.0.0.1:5173/");
+      await page.goto(`${vite.url}/login`);
       await expect(
         page.getByRole("heading", { name: "Sign in to HarborX" }),
       ).toBeVisible();

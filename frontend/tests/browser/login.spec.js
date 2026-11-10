@@ -23,7 +23,7 @@ test("login photograph and form adapt to desktop, tablet and small mobile", asyn
   const errors = diagnostics(page);
   for (const width of [1440, 900, 768, 375, 320]) {
     await page.setViewportSize({ width, height: 900 });
-    await page.goto("/");
+    await page.goto("/login");
     await expect(
       page.getByRole("heading", { name: "Sign in to HarborX" }),
     ).toBeVisible();
@@ -73,7 +73,7 @@ test("login photograph and form adapt to desktop, tablet and small mobile", asyn
 for (const role of ["seller", "buyer", "admin"]) {
   test(`${role} email login and session survive reload`, async ({ page }) => {
     const errors = diagnostics(page);
-    await page.goto("/");
+    await page.goto("/login");
     await page.getByLabel("Email address").fill(`${role}@harborx.demo`);
     await page.getByLabel("Password", { exact: true }).fill(DEMO_PASSWORD);
     const response = page.waitForResponse(
@@ -95,7 +95,7 @@ for (const role of ["seller", "buyer", "admin"]) {
 test("password visibility, required fields and login error handling", async ({
   page,
 }) => {
-  await page.goto("/");
+  await page.goto("/login");
   const password = page.getByLabel("Password", { exact: true });
   await password.fill("incorrect-password");
   await page
@@ -135,7 +135,7 @@ for (const role of ["buyer", "seller"]) {
     page,
   }) => {
     const errors = diagnostics(page);
-    await page.goto("/");
+    await page.goto("/login");
     await page
       .getByRole("button", { name: "Create account", exact: true })
       .click();
@@ -183,11 +183,11 @@ for (const role of ["buyer", "seller"]) {
 test("language selection translates login and persists after reload", async ({
   page,
 }) => {
-  await page.goto("/");
+  await page.goto("/login");
   for (const [language, heading] of [
-    ["தமிழ் (TA)", "HarborX இல் உள்நுழையவும்"],
-    ["සිංහල (SI)", "HarborX වෙත පිවිසෙන්න"],
-    ["English (EN)", "Sign in to HarborX"],
+    ["தமிழ் (TAMIL)", "HarborX இல் உள்நுழையவும்"],
+    ["සිංහල (SINHALA)", "HarborX වෙත පිවිසෙන්න"],
+    ["English (ENGLISH)", "Sign in to HarborX"],
   ]) {
     await page.getByRole("button", { name: "Select display language" }).click();
     await page.getByRole("option", { name: language, exact: true }).click();
@@ -205,7 +205,7 @@ test("login photograph remains available on an offline reload", async ({
   page,
   context,
 }) => {
-  await page.goto("/");
+  await page.goto("/login");
   await expect(
     page.getByRole("heading", { name: "Sign in to HarborX" }),
   ).toBeVisible();

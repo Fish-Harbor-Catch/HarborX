@@ -12,6 +12,7 @@
   position: relative;
   min-width: 0;
   overflow: hidden;
+  color: #0d5277;
 }
 .auth-split .auth-photo img {
   position: absolute;
@@ -49,10 +50,11 @@
   margin: 0;
 }
 .auth-split .lang-selector-trigger {
-  min-width: 64px;
+  min-width: 80px;
   min-height: 44px;
-  background: #fff;
-  border: 1px solid #dce3e8;
+  background: #0d5277;
+  border: 1px solid #101011;
+  color: #ffffff;
 }
 .auth-split .auth-brand {
   align-items: center;
@@ -111,7 +113,7 @@
   color: #263e48;
   background: #fff;
   border: 1px solid #dce3e8;
-  border-radius: 6px;
+  border-radius: 12px;
   font-size: 16px;
   box-shadow: none;
 }
@@ -153,8 +155,8 @@
   min-height: 50px;
   margin: 6px 0 0;
   font-size: 15px;
-  background: #087f7a;
-  border-radius: 6px;
+  background: #1375cb;
+  border-radius: 12px;
   box-shadow: none;
 }
 .auth-split .auth-form > .btn:hover {

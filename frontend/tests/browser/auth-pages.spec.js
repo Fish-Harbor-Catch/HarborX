@@ -7,17 +7,18 @@ const createAccount = (page) =>
 const signIn = (page) =>
   page.getByRole("button", { name: "Sign in", exact: true });
 
-test("switching pages retains credentials and role, masks passwords and keeps navigation unchanged", async ({
+test("switching pages retains credentials and role, masks passwords and updates URLs", async ({
   page,
 }) => {
-  await page.goto("/");
-  const url = page.url();
+  await page.goto("/login");
+  await expect(page).toHaveURL(/\/login$/);
   await email(page).fill("switch@example.com");
   await password(page).fill("SharedPassword2026!");
   await page
     .getByRole("button", { name: "Show password", exact: true })
     .click();
   await createAccount(page).click();
+  await expect(page).toHaveURL(/\/register$/);
   await expect(email(page)).toHaveValue("switch@example.com");
   await expect(password(page)).toHaveValue("SharedPassword2026!");
   await expect(password(page)).toHaveAttribute("type", "password");
@@ -33,6 +34,7 @@ test("switching pages retains credentials and role, masks passwords and keeps na
     .getByRole("button", { name: "Show password", exact: true })
     .click();
   await signIn(page).click();
+  await expect(page).toHaveURL(/\/login$/);
   await expect(password(page)).toHaveAttribute("type", "password");
   await expect(password(page)).toHaveAttribute("minlength", "1");
   await expect(password(page)).toHaveAttribute(
@@ -48,7 +50,7 @@ test("switching pages retains credentials and role, masks passwords and keeps na
   );
   await expect(page.getByLabel("Boat name / registration")).toBeVisible();
   await expect(page.getByLabel("Full name")).toHaveValue("");
-  expect(page.url()).toBe(url);
+  await expect(page).toHaveURL(/\/register$/);
 });
 
 for (const mode of ["login", "register"]) {
@@ -69,7 +71,7 @@ for (const mode of ["login", "register"]) {
         body: JSON.stringify({ error: "Authentication test error" }),
       });
     });
-    await page.goto("/");
+    await page.goto("/login");
     if (mode === "register") {
       await createAccount(page).click();
       await page.getByLabel("Full name").fill("Auth Test");
@@ -119,7 +121,7 @@ test("registration validates required fields and password length without sending
   page.on("request", (request) => {
     if (request.url().endsWith("/api/auth/register")) requests.push(request);
   });
-  await page.goto("/");
+  await page.goto("/login");
   await createAccount(page).click();
   const submit = page
     .locator("form")
@@ -149,11 +151,11 @@ test("registration validates required fields and password length without sending
 test("registration follows the selected language across page switches", async ({
   page,
 }) => {
-  await page.goto("/");
+  await page.goto("/login");
   await createAccount(page).click();
   for (const [language, registerHeading, loginHeading] of [
-    ["தமிழ் (TA)", "உங்கள் கணக்கை உருவாக்கவும்", "HarborX இல் உள்நுழையவும்"],
-    ["සිංහල (SI)", "ඔබේ ගිණුම සාදන්න", "HarborX වෙත පිවිසෙන්න"],
+    ["தமிழ் (TAMIL)", "உங்கள் கணக்கை உருவாக்கவும்", "HarborX இல் உள்நுழையவும்"],
+    ["සිංහල (SINHALA)", "ඔබේ ගිණුම සාදන්න", "HarborX වෙත පිවිසෙන්න"],
   ]) {
     await page.getByRole("button", { name: "Select display language" }).click();
     await page.getByRole("option", { name: language, exact: true }).click();

@@ -77,7 +77,7 @@ async function noOverflow(page, screenName = "") {
 }
 
 async function signIn(page, role = "seller") {
-  await page.goto("/");
+  await page.goto("/login");
   await page.getByLabel("Email address").fill(`${role}@harborx.demo`);
   await page.getByLabel("Password", { exact: true }).fill(DEMO_PASSWORD);
   const login = page.waitForResponse(
@@ -297,7 +297,7 @@ test.describe("PHASE 3: Responsive Viewport Testing", () => {
       const diagnostics = setupDiagnostics(page);
 
       // 1. Auth Page
-      await page.goto("/");
+      await page.goto("/login");
       await expect(page.getByRole("button", { name: "Sign in", exact: true })).toBeVisible();
       await noOverflow(page, `Auth ${vp.label}`);
       await page.screenshot({ path: join(SCREENSHOT_DIR, `responsive-auth-${vp.label}.png`), fullPage: true });
