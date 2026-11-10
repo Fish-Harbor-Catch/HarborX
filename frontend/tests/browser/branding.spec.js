@@ -4,10 +4,14 @@ import sharp from "sharp";
 import { DEMO_PASSWORD } from "../../../backend/src/seed.js";
 
 async function logo(image, variant = "harborx-logo") {
+  const compact = variant === "icon";
   await expect(image).toBeVisible();
   await expect
     .poll(() =>
-      image.evaluate((image) => image.complete && image.naturalWidth > 0),
+      image.evaluate(
+        (image, width) => image.complete && image.naturalWidth === width,
+        compact ? 96 : 556,
+      ),
     )
     .toBe(true);
   const dimensions = await image.evaluate((image) => {
@@ -21,7 +25,6 @@ async function logo(image, variant = "harborx-logo") {
       alt: image.alt,
     };
   });
-  const compact = variant === "icon";
   expect(dimensions.naturalWidth).toBe(compact ? 96 : 556);
   expect(dimensions.naturalHeight).toBe(compact ? 96 : 168);
   expect(dimensions.width / dimensions.height).toBeCloseTo(
@@ -103,8 +106,8 @@ for (const role of ["seller", "buyer", "admin"]) {
       .getByRole("button", { name: "Expand sidebar navigation", exact: true })
       .click();
     await page.setViewportSize({ width: 768, height: 900 });
-    await logo(page.locator(".sidebar .logo-symbol"), "icon");
-    await expect(page.locator(".sidebar .logo-wordmark")).toBeHidden();
+    await logo(page.locator(".sidebar .logo img"), "icon");
+    await expect(page.locator(".sidebar .logo img")).toHaveCount(1);
     await page.screenshot({
       path: testInfo.outputPath(`${role}-tablet.png`),
       animations: "disabled",

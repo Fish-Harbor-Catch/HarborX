@@ -91,7 +91,7 @@ export function Sidebar({
         {...props}
       >
         <div className="sidebar-header">
-          <Logo light collapsed={isCollapsed} />
+          <Logo light collapsed={isCollapsed} responsiveCompact />
           {isOpen && (
             <button
               type="button"

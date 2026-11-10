@@ -13,6 +13,7 @@ import "./Logo.css";
 export function Logo({
   light = false,
   collapsed = false,
+  responsiveCompact = false,
   className = "",
   ...props
 }) {
@@ -21,22 +22,21 @@ export function Logo({
       className={`logo ${light ? "light" : ""} ${collapsed ? "collapsed" : ""} ${className}`.trim()}
       {...props}
     >
-      <img
-        className="logo-symbol"
-        src={icon}
-        width="96"
-        height="96"
-        alt="HarborX"
-      />
-      {!collapsed && (
+      <picture>
+        {responsiveCompact && !collapsed && (
+          <source
+            media="(min-width: 761px) and (max-width: 1050px)"
+            srcSet={icon}
+          />
+        )}
         <img
-          className="logo-wordmark"
-          src={light ? darkWordmark : wordmark}
-          width="556"
-          height="168"
+          className={collapsed ? "logo-symbol" : "logo-wordmark"}
+          src={collapsed ? icon : light ? darkWordmark : wordmark}
+          width={collapsed ? 96 : 556}
+          height={collapsed ? 96 : 168}
           alt="HarborX"
         />
-      )}
+      </picture>
     </div>
   );
 }
