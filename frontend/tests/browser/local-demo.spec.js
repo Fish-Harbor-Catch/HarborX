@@ -19,7 +19,7 @@ test("production hides local demo and excludes demo credentials from JavaScript"
     page.getByRole("heading", { name: "Sign in to HarborX" }),
   ).toBeVisible();
   await expect(
-    page.getByRole("region", { name: "LOCAL DEMO", exact: true }),
+    page.getByRole("region", { name: "DEMO", exact: true }),
   ).toHaveCount(0);
   const assets = new URL("../../dist/assets/", import.meta.url);
   for (const file of await readdir(assets)) {
@@ -68,7 +68,7 @@ test.describe("demo-enabled development login", () => {
       });
       await page.goto("http://127.0.0.1:5173/");
       const panel = page.getByRole("region", {
-        name: "LOCAL DEMO",
+        name: "DEMO",
         exact: true,
       });
       await expect(panel).toBeVisible();
@@ -138,7 +138,7 @@ test.describe("demo-enabled development login", () => {
     page,
   }, testInfo) => {
     await page.goto("http://127.0.0.1:5173/");
-    const panel = page.getByRole("region", { name: "LOCAL DEMO", exact: true });
+    const panel = page.getByRole("region", { name: "DEMO", exact: true });
     await expect(panel).toBeVisible();
     for (const width of [320, 375, 768, 1440]) {
       await page.setViewportSize({ width, height: 900 });
@@ -198,7 +198,7 @@ test.describe("demo-enabled development login", () => {
         page.getByRole("heading", { name: "Sign in to HarborX" }),
       ).toBeVisible();
       await expect(
-        page.getByRole("region", { name: "LOCAL DEMO", exact: true }),
+        page.getByRole("region", { name: "DEMO", exact: true }),
       ).toHaveCount(0);
     });
   }

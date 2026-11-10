@@ -29,11 +29,6 @@ import {
   Wifi,
   WifiOff,
   RefreshCw,
-  Eye,
-  EyeOff,
-  Mail,
-  LockKeyhole,
-  UserRound,
   Check,
   AlertCircle,
   Filter,
@@ -44,11 +39,10 @@ import {
   TrendingUp,
   ArrowLeft,
   LifeBuoy,
-  Phone,
   Info,
 } from "lucide-react";
 import { api, money, date, initials, createId } from "./api.js";
-import { LanguageProvider, useLanguage, LanguageSwitcher } from "./i18n.jsx";
+import { LanguageProvider, useLanguage } from "./i18n.jsx";
 import { useDraftVault } from "./useDraftVault.js";
 import { DraftPanel, OfflineWorkspace } from "./DraftPanel.jsx";
 import { AppShell } from "./components/layout/index.js";
@@ -83,8 +77,9 @@ import {
   SettingsScreen,
 } from "./screens/index.js";
 import PwaStatus from "./PwaStatus.jsx";
-import LoginSlideshow from "./LoginSlideshow.jsx";
-import "./auth.css";
+import LoginPage from "./features/auth/LoginPage.jsx";
+import RegisterPage from "./features/auth/RegisterPage.jsx";
+import { AuthLayout } from "./features/auth/components/SharedAuthComponents.jsx";
 import {
   activeOfflineOwner,
   verifyDraftOwner,
@@ -111,329 +106,37 @@ const rolesLabel = {
   buyer: "Buyer",
 };
 
-// Local-only credentials mirror backend/src/seed.js. Vite removes this object
-// from production bundles; the API health flag must also enable the panel.
-const LOCAL_DEMO = import.meta.env.DEV
-  ? {
-      password: "HarborXDemo2026!",
-      accounts: [
-        { role: "seller", label: "Seller", email: "seller@harborx.demo" },
-        { role: "buyer", label: "Buyer", email: "buyer@harborx.demo" },
-        { role: "admin", label: "Manager", email: "admin@harborx.demo" },
-      ],
-    }
-  : null;
-
+// Shared values intentionally survive switches between the two forms.
 function Auth({ onLogin, toast, demo }) {
-  const { t } = useLanguage();
-  const [register, setRegister] = useState(false),
-    [busy, setBusy] = useState(false),
-    [email, setEmail] = useState(""),
-    [password, setPassword] = useState(""),
-    [showPassword, setShowPassword] = useState(false),
-    [role, setRole] = useState("buyer");
-  async function submit(e) {
-    e.preventDefault();
-    setBusy(true);
-    try {
-      const f = new FormData(e.currentTarget);
-      const data = await api(`/auth/${register ? "register" : "login"}`, {
-        method: "POST",
-        body: register
-          ? {
-              name: f.get("name"),
-              email,
-              password,
-              role,
-              phone: f.get("phone") || "",
-              boat_name: f.get("boat_name") || "",
-            }
-          : { email, password },
-      });
-      await onLogin(data.user);
-    } catch (e) {
-      toast(e.message, "error");
-    } finally {
-      setBusy(false);
-    }
-  }
-  function fillDemo(account) {
-    setEmail(account.email);
-    setPassword(LOCAL_DEMO.password);
-    setShowPassword(false);
-  }
-  function toggleRegistration() {
-    setRegister((value) => !value);
-    setShowPassword(false);
-  }
+  const [register, setRegister] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [role, setRole] = useState("buyer");
+  const credentials = {
+    email,
+    password,
+    onEmailChange: setEmail,
+    onPasswordChange: setPassword,
+    onLogin,
+    toast,
+  };
   return (
-    <main className="auth-page auth-split">
-      <LoginSlideshow />
-      <section className="auth-form-wrap" aria-labelledby="auth-heading">
-        <div className="auth-content">
-          <div className="auth-top">
-            <LanguageSwitcher />
-          </div>
-          <div className="auth-brand">
-            <Logo />
-          </div>
-          <form className="auth-form" onSubmit={submit}>
-            <h1 id="auth-heading">
-              {register
-                ? t("auth_create_heading", "Create your account")
-                : t("auth_signin_heading", "Sign in to HarborX")}
-            </h1>
-            <p>
-              {register
-                ? t(
-                    "auth_create_intro",
-                    "Choose your role and enter your details.",
-                  )
-                : t(
-                    "auth_signin_intro",
-                    "Sri Lanka's Digital Fish Auction Platform.",
-                  )}
-            </p>
-            {register && (
-              <>
-                <label>
-                  {t("auth_name_label", "Full name")}
-                  <div className="input-icon">
-                    <UserRound size={17} />
-                    <input
-                      name="name"
-                      required
-                      minLength={2}
-                      placeholder={t("auth_name_placeholder", "Your full name")}
-                    />
-                  </div>
-                </label>
-
-                <div className="role-selector-field">
-                  <span className="field-label-text">
-                    {t("auth_role_prompt", "Choose your harbor role:")}
-                  </span>
-                  <input type="hidden" name="role" value={role} />
-                  <div
-                    className="role-cards"
-                    role="radiogroup"
-                    aria-label="Harbor role"
-                  >
-                    <button
-                      type="button"
-                      role="radio"
-                      aria-checked={role === "seller"}
-                      className={`role-card ${role === "seller" ? "selected" : ""}`}
-                      onClick={() => setRole("seller")}
-                    >
-                      <div className="role-card-icon seller">
-                        <Ship size={24} aria-hidden="true" />
-                      </div>
-                      <div className="role-card-content">
-                        <strong>
-                          {t("auth_role_seller", "Seller / Fisherman")}
-                        </strong>
-                        <span>
-                          {t(
-                            "auth_role_seller_desc",
-                            "I catch fish or sell my boat's harvest",
-                          )}
-                        </span>
-                      </div>
-                      {role === "seller" && (
-                        <Check
-                          size={18}
-                          className="role-card-check"
-                          aria-hidden="true"
-                        />
-                      )}
-                    </button>
-
-                    <button
-                      type="button"
-                      role="radio"
-                      aria-checked={role === "buyer"}
-                      className={`role-card ${role === "buyer" ? "selected" : ""}`}
-                      onClick={() => setRole("buyer")}
-                    >
-                      <div className="role-card-icon buyer">
-                        <Fish size={24} aria-hidden="true" />
-                      </div>
-                      <div className="role-card-content">
-                        <strong>
-                          {t("auth_role_buyer", "Buyer / Trader")}
-                        </strong>
-                        <span>
-                          {t(
-                            "auth_role_buyer_desc",
-                            "I bid on catches and buy seafood",
-                          )}
-                        </span>
-                      </div>
-                      {role === "buyer" && (
-                        <Check
-                          size={18}
-                          className="role-card-check"
-                          aria-hidden="true"
-                        />
-                      )}
-                    </button>
-                  </div>
-                </div>
-
-                {role === "seller" && (
-                  <label>
-                    {t("auth_boat_label", "Boat name / registration")}
-                    <div className="input-icon">
-                      <Ship size={17} />
-                      <input
-                        name="boat_name"
-                        placeholder={t(
-                          "auth_boat_placeholder",
-                          "e.g. Ocean Pearl LK-2048",
-                        )}
-                      />
-                    </div>
-                  </label>
-                )}
-                <label>
-                  {t("auth_phone_label", "Phone number")}
-                  <div className="input-icon">
-                    <Phone size={17} />
-                    <input
-                      name="phone"
-                      type="tel"
-                      placeholder={t(
-                        "auth_phone_placeholder",
-                        "+94 77 123 4567",
-                      )}
-                    />
-                  </div>
-                </label>
-              </>
-            )}
-            <label>
-              {t("auth_email_label", "Email address")}
-              <div className="input-icon">
-                <Mail size={17} />
-                <input
-                  type="email"
-                  autoComplete="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder={t("auth_email_placeholder", "you@example.com")}
-                />
-              </div>
-            </label>
-            <div className="auth-password-field">
-              <label htmlFor="auth-password">
-                {t("auth_pass_label", "Password")}
-              </label>
-              <div className="input-icon auth-password">
-                <LockKeyhole size={17} />
-                <input
-                  id="auth-password"
-                  type={showPassword ? "text" : "password"}
-                  required
-                  minLength={register ? 12 : 1}
-                  maxLength={128}
-                  autoComplete={register ? "new-password" : "current-password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder={
-                    register
-                      ? t("auth_pass_new_placeholder", "At least 12 characters")
-                      : t("auth_pass_cur_placeholder", "Enter your password")
-                  }
-                />
-                <button
-                  type="button"
-                  className="auth-password-toggle"
-                  aria-label={
-                    showPassword
-                      ? t("auth_hide_password", "Hide password")
-                      : t("auth_show_password", "Show password")
-                  }
-                  aria-controls="auth-password"
-                  aria-pressed={showPassword}
-                  onClick={() => setShowPassword((value) => !value)}
-                >
-                  {showPassword ? (
-                    <EyeOff size={19} aria-hidden="true" />
-                  ) : (
-                    <Eye size={19} aria-hidden="true" />
-                  )}
-                </button>
-              </div>
-            </div>
-            {register && (
-              <small className="muted">
-                {t(
-                  "auth_buyer_verification_notice",
-                  "Buyers need manager verification before placing bids. Admin accounts are created separately.",
-                )}
-              </small>
-            )}
-            <button className="btn primary full" disabled={busy}>
-              {busy
-                ? t("action_please_wait", "Please wait…")
-                : register
-                  ? t("action_create_account", "Create account")
-                  : t("action_sign_in", "Sign in")}
-            </button>
-          </form>
-          <div className="auth-registration">
-            <span>
-              {register
-                ? t("auth_already_prompt", "Already have an account?")
-                : t("auth_new_prompt", "New to HarborX?")}
-            </span>
-            <button
-              type="button"
-              className="text-btn"
-              onClick={toggleRegistration}
-              disabled={busy}
-            >
-              {register
-                ? t("action_sign_in", "Sign in")
-                : t("action_create_account", "Create account")}
-            </button>
-          </div>
-          {import.meta.env.DEV && demo && !register && (
-            <section
-              className="auth-local-demo"
-              aria-labelledby="local-demo-heading"
-            >
-              <span id="local-demo-heading" className="auth-local-demo-badge">
-                 DEMO
-              </span>
-              <p>Choose a role to fill the sign-in details</p>
-              <div
-                className="auth-local-demo-roles"
-                role="group"
-                aria-label="Demo sign-in role"
-              >
-                {LOCAL_DEMO.accounts.map((account) => (
-                  <button
-                    key={account.role}
-                    type="button"
-                    aria-pressed={
-                      email === account.email &&
-                      password === LOCAL_DEMO.password
-                    }
-                    disabled={busy}
-                    onClick={() => fillDemo(account)}
-                  >
-                    {account.label}
-                  </button>
-                ))}
-              </div>
-            </section>
-          )}
-        </div>
-      </section>
-    </main>
+    <AuthLayout>
+      {register ? (
+        <RegisterPage
+          {...credentials}
+          role={role}
+          onRoleChange={setRole}
+          onSignIn={() => setRegister(false)}
+        />
+      ) : (
+        <LoginPage
+          {...credentials}
+          demo={demo}
+          onRegister={() => setRegister(true)}
+        />
+      )}
+    </AuthLayout>
   );
 }
 
