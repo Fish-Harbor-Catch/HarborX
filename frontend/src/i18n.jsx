@@ -8,13 +8,16 @@ import { ChevronDown, Check } from "lucide-react";
  */
 
 export const LANGUAGES = [
-  { code: "en", label: "English (EN)", name: "English" },
-  { code: "ta", label: "தமிழ் (TA)", name: "Tamil" },
-  { code: "si", label: "සිංහල (SI)", name: "Sinhala" },
+  { code: "en", label: "English (ENGLISH)", name: "English" },
+  { code: "ta", label: "தமிழ் (TAMIL)", name: "Tamil" },
+  { code: "si", label: "සිංහල (SINHALA)", name: "Sinhala" },
 ];
 
 export const TRANSLATIONS = {
   en: {
+    route_not_found_title: "Page not found",
+    route_not_found_description: "This HarborX page does not exist.",
+    route_return_home: "Return to HarborX",
     nav_close_drawer: "Close navigation drawer",
     overview_participated_count: "{count} auctions participated",
     overview_won_summary: "Successful auctions",
@@ -524,6 +527,9 @@ export const TRANSLATIONS = {
   },
 
   ta: {
+    route_not_found_title: "பக்கம் கிடைக்கவில்லை",
+    route_not_found_description: "இந்த HarborX பக்கம் இல்லை.",
+    route_return_home: "HarborX க்குத் திரும்பவும்",
     nav_close_drawer: "வழிசெலுத்தல் மெனுவை மூடு",
     overview_participated_count: "பங்கேற்ற ஏலங்கள்: {count}",
     overview_won_summary: "வெற்றிகரமான ஏலங்கள்",
@@ -1033,6 +1039,9 @@ export const TRANSLATIONS = {
   },
 
   si: {
+    route_not_found_title: "පිටුව හමු නොවීය",
+    route_not_found_description: "මෙම HarborX පිටුව නොපවතී.",
+    route_return_home: "HarborX වෙත ආපසු යන්න",
     nav_close_drawer: "සංචාලන මෙනුව වසන්න",
     overview_participated_count: "සහභාගි වූ වෙන්දේසි: {count}",
     overview_won_summary: "ජයගත් වෙන්දේසි",

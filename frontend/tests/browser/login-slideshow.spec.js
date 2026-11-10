@@ -207,10 +207,12 @@ test("switching authentication pages preserves the slideshow and its pending dea
   await page
     .getByRole("button", { name: "Create account", exact: true })
     .click();
+  await expect(page).toHaveURL(/\/register$/);
   await current(page, 0);
   await page.clock.runFor(1000);
   await current(page, 1);
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
+  await expect(page).toHaveURL(/\/login$/);
   expect(
     await page
       .locator(".auth-slideshow")
@@ -221,4 +223,12 @@ test("switching authentication pages preserves the slideshow and its pending dea
   expect(await page.evaluate(() => window.slideshowTimers.pending.size)).toBe(
     1,
   );
+  await page.goBack();
+  await expect(page).toHaveURL(/\/register$/);
+  await current(page, 2);
+  await page.clock.runFor(4000);
+  await current(page, 3);
+  await page.goForward();
+  await expect(page).toHaveURL(/\/login$/);
+  await current(page, 3);
 });

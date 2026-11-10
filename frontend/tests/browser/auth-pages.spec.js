@@ -7,17 +7,18 @@ const createAccount = (page) =>
 const signIn = (page) =>
   page.getByRole("button", { name: "Sign in", exact: true });
 
-test("switching pages retains credentials and role, masks passwords and keeps navigation unchanged", async ({
+test("switching pages retains credentials and role, masks passwords and updates URLs", async ({
   page,
 }) => {
   await page.goto("/");
-  const url = page.url();
+  await expect(page).toHaveURL(/\/login$/);
   await email(page).fill("switch@example.com");
   await password(page).fill("SharedPassword2026!");
   await page
     .getByRole("button", { name: "Show password", exact: true })
     .click();
   await createAccount(page).click();
+  await expect(page).toHaveURL(/\/register$/);
   await expect(email(page)).toHaveValue("switch@example.com");
   await expect(password(page)).toHaveValue("SharedPassword2026!");
   await expect(password(page)).toHaveAttribute("type", "password");
@@ -33,6 +34,7 @@ test("switching pages retains credentials and role, masks passwords and keeps na
     .getByRole("button", { name: "Show password", exact: true })
     .click();
   await signIn(page).click();
+  await expect(page).toHaveURL(/\/login$/);
   await expect(password(page)).toHaveAttribute("type", "password");
   await expect(password(page)).toHaveAttribute("minlength", "1");
   await expect(password(page)).toHaveAttribute(
@@ -48,7 +50,7 @@ test("switching pages retains credentials and role, masks passwords and keeps na
   );
   await expect(page.getByLabel("Boat name / registration")).toBeVisible();
   await expect(page.getByLabel("Full name")).toHaveValue("");
-  expect(page.url()).toBe(url);
+  await expect(page).toHaveURL(/\/register$/);
 });
 
 for (const mode of ["login", "register"]) {

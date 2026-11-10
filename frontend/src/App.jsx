@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
+import { flushSync } from "react-dom";
+import { recordNavigation } from "./app/navigation-diagnostics.js";
 import {
   Anchor,
   LayoutDashboard,
@@ -77,9 +79,10 @@ import {
   SettingsScreen,
 } from "./screens/index.js";
 import PwaStatus from "./PwaStatus.jsx";
-import LoginPage from "./features/auth/LoginPage.jsx";
-import RegisterPage from "./features/auth/RegisterPage.jsx";
-import { AuthLayout } from "./features/auth/components/SharedAuthComponents.jsx";
+import { BrowserRouter, useLocation, useNavigate } from "react-router";
+import AuthPages from "./features/auth/AuthPages.jsx";
+import ApplicationRoutes from "./app/router.jsx";
+import { workspaceRoute, pagePath } from "./app/route-config.js";
 import {
   activeOfflineOwner,
   verifyDraftOwner,
@@ -106,45 +109,10 @@ const rolesLabel = {
   buyer: "Buyer",
 };
 
-// Shared values intentionally survive switches between the two forms.
-function Auth({ onLogin, toast, demo }) {
-  const [register, setRegister] = useState(false);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [role, setRole] = useState("buyer");
-  const credentials = {
-    email,
-    password,
-    onEmailChange: setEmail,
-    onPasswordChange: setPassword,
-    onLogin,
-    toast,
-  };
-  return (
-    <AuthLayout>
-      {register ? (
-        <RegisterPage
-          {...credentials}
-          role={role}
-          onRoleChange={setRole}
-          onSignIn={() => setRegister(false)}
-        />
-      ) : (
-        <LoginPage
-          {...credentials}
-          demo={demo}
-          onRegister={() => setRegister(true)}
-        />
-      )}
-    </AuthLayout>
-  );
-}
-
 function HarborApp() {
   const [user, setUser] = useState(null),
     [ready, setReady] = useState(false),
     [demo, setDemo] = useState(false),
-    [page, setPage] = useState("overview"),
     [lots, setLots] = useState([]),
     [invoices, setInvoices] = useState([]),
     [users, setUsers] = useState([]),
@@ -162,10 +130,22 @@ function HarborApp() {
     [localMode, setLocalMode] = useState(false),
     [synced, setSynced] = useState(null);
   const { lang, t } = useLanguage();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const page = workspaceRoute(location.pathname)?.page || "overview";
+  useEffect(() => {
+    recordNavigation("render", { ready, role: user?.role || "guest" });
+  }, [location.pathname, ready, user?.role]);
   const draftStore = useDraftVault(user);
   const pendingDrafts = draftStore.drafts.filter(
     (draft) => draft.state !== "synced",
   );
+  useEffect(() => {
+    setSearch("");
+    setSidebar(false);
+    setSelected(null);
+    setCatchForm(null);
+  }, [location.pathname]);
   const sessionGeneration = useRef(0);
   function clearPrivateView() {
     sessionGeneration.current++;
@@ -178,7 +158,6 @@ function HarborApp() {
     setBids([]);
     setSearch("");
     setSynced(null);
-    setPage("overview");
   }
   const toast = useCallback(
     (message, type = "success") => setNotice({ message, type, id: Date.now() }),
@@ -212,19 +191,25 @@ function HarborApp() {
     // Returning to the server session is an explicit action.
     if (!online && offlineOwner && !user) setLocalMode(true);
   }, [online, offlineOwner, user]);
-  useEffect(() => {
-    activeOfflineOwner()
-      .then(setOfflineOwner)
-      .catch(() => {});
+  const restoreSession = useCallback(() => {
+    recordNavigation("session", { phase: "start" });
+    setReady(false);
+    clearPrivateView();
+    setUser(null);
+    setError("");
     api("/health")
       .then((x) => setDemo(x.demo))
       .catch(() => {});
-    api("/auth/me")
+    return api("/auth/me")
       .then(async (x) => {
         await verifyDraftOwner(x.user).catch(() => {});
+        recordNavigation("session", { phase: "valid", role: x.user.role });
         setUser(x.user);
       })
       .catch(async (e) => {
+        recordNavigation("session", {
+          phase: e.status === 401 ? "unauthenticated" : "unavailable",
+        });
         if (e.status === 401) {
           await revokeOfflineAccess().catch(() => {});
           setOfflineOwner(null);
@@ -232,13 +217,35 @@ function HarborApp() {
         if (e.status !== 401) setError(e.message);
       })
       .finally(() => setReady(true));
+  }, []);
+  useEffect(() => {
+    activeOfflineOwner()
+      .then(setOfflineOwner)
+      .catch(() => {});
+    restoreSession();
     const yes = () => setOnline(true),
       no = () => setOnline(false);
+    const hideCachedPage = (event) => {
+      if (!event.persisted) return;
+      // Commit neutral UI before the browser freezes the document and its DOM.
+      flushSync(() => setReady(false));
+    };
+    const restoreCachedPage = (event) => {
+      if (!event.persisted) return;
+      activeOfflineOwner()
+        .then(setOfflineOwner)
+        .catch(() => {});
+      restoreSession();
+    };
     window.addEventListener("online", yes);
     window.addEventListener("offline", no);
+    window.addEventListener("pagehide", hideCachedPage);
+    window.addEventListener("pageshow", restoreCachedPage);
     return () => {
       window.removeEventListener("online", yes);
       window.removeEventListener("offline", no);
+      window.removeEventListener("pagehide", hideCachedPage);
+      window.removeEventListener("pageshow", restoreCachedPage);
     };
   }, []);
   const refresh = useCallback(async () => {
@@ -269,7 +276,6 @@ function HarborApp() {
         setOfflineOwner(null);
         setSelected(null);
         setCatchForm(null);
-        setPage("overview");
       } else setError(e.message);
     }
   }, [user]);
@@ -318,6 +324,12 @@ function HarborApp() {
       return true;
     } catch (e) {
       toast(e.message, "error");
+      if (e.status === 401) {
+        clearPrivateView();
+        setUser(null);
+        setOfflineOwner(null);
+        await revokeOfflineAccess().catch(() => {});
+      }
       return false;
     } finally {
       setBusy(false);
@@ -331,13 +343,16 @@ function HarborApp() {
       setUser(null);
       setOfflineOwner(null);
       setSelected(null);
-      setPage("overview");
       setLots([]);
       setSearch("");
+      navigate("/login", { replace: true });
+      recordNavigation("logout");
     }
   }
   function go(p) {
-    setPage(p);
+    const path = pagePath(user.role, p);
+    recordNavigation("menu", { destination: path });
+    if (path && path !== location.pathname) navigate(path);
     setSearch("");
     setSidebar(false);
   }
@@ -362,56 +377,68 @@ function HarborApp() {
       </button>
     </div>
   );
-  if (!user && offlineOwner && (localMode || !online)) {
-    return (
+  const offline =
+    !user && offlineOwner ? (
       <>
         <OfflineWorkspace
           owner={offlineOwner}
           renderForm={(props) => <CatchForm {...props} />}
-          onReturn={() => {
+          onReturn={async () => {
             setLocalMode(false);
             setOfflineOwner(null);
-            window.location.reload();
+            await restoreSession();
+            navigate("/login", { replace: true });
           }}
         />
         <PwaStatus />
       </>
-    );
-  }
+    ) : null;
   if (!user)
     return (
       <>
         {error && (
           <div className="server-error">
             {error}
-            <button onClick={() => window.location.reload()}>Retry</button>
+            <button onClick={restoreSession}>Retry</button>
           </div>
         )}
-        <Auth
-          onLogin={async (u) => {
-            await verifyDraftOwner(u).catch(() =>
-              toast("Signed in. Local storage is unavailable.", "error"),
-            );
-            announceAccountChange();
-            clearPrivateView();
-            setUser(u);
-            setError("");
-          }}
-          toast={toast}
-          demo={demo}
+        <ApplicationRoutes
+          user={user}
+          offline={offline}
+          preferOffline={Boolean(offline && (localMode || !online))}
+          auth={
+            <>
+              <AuthPages
+                onLogin={async (u) => {
+                  await verifyDraftOwner(u).catch(() =>
+                    toast("Signed in. Local storage is unavailable.", "error"),
+                  );
+                  announceAccountChange();
+                  clearPrivateView();
+                  setUser(u);
+                  setError("");
+                }}
+                toast={toast}
+                demo={demo}
+              />
+              {offlineOwner && (
+                <div className="local-entry">
+                  <button
+                    className="btn secondary"
+                    onClick={() => {
+                      setLocalMode(true);
+                      navigate("/offline");
+                    }}
+                  >
+                    Open saved local drafts
+                  </button>
+                </div>
+              )}
+              <PwaStatus />
+            </>
+          }
         />
-        {offlineOwner && (
-          <div className="local-entry">
-            <button
-              className="btn secondary"
-              onClick={() => setLocalMode(true)}
-            >
-              Open saved local drafts
-            </button>
-          </div>
-        )}
         {toastEl}
-        <PwaStatus />
       </>
     );
   const role = user.role,
@@ -436,7 +463,10 @@ function HarborApp() {
           {
             label: t("overview_stat_total_value", "Total auction value"),
             value: `LKR ${money(lots.reduce((n, l) => n + Number(l.final_price || 0), 0))}`,
-            sub: t("overview_stat_total_value_sub", "Across completed auctions"),
+            sub: t(
+              "overview_stat_total_value_sub",
+              "Across completed auctions",
+            ),
             icon: TrendingUp,
             color: "teal",
           },
@@ -455,7 +485,10 @@ function HarborApp() {
             color: "purple",
           },
           {
-            label: t("overview_stat_outstanding_payments", "Outstanding payments"),
+            label: t(
+              "overview_stat_outstanding_payments",
+              "Outstanding payments",
+            ),
             value: `LKR ${money(outstanding)}`,
             sub: `${invoices.filter((l) => l.payment_status === "Overdue").length} ${t("overview_stat_outstanding_payments_sub", "{count} overdue invoices").replace("{count}", "").trim()}`,
             icon: Wallet,
@@ -473,8 +506,14 @@ function HarborApp() {
             },
             {
               label: t("overview_stat_active_auctions", "Active auctions"),
-              value: own.filter((l) => l.status === "live" && new Date(l.round_ends_at) > new Date()).length,
-              sub: t("overview_stat_active_auctions_sub", "Currently in bidding"),
+              value: own.filter(
+                (l) =>
+                  l.status === "live" && new Date(l.round_ends_at) > new Date(),
+              ).length,
+              sub: t(
+                "overview_stat_active_auctions_sub",
+                "Currently in bidding",
+              ),
               icon: Gavel,
               color: "teal",
             },
@@ -504,7 +543,11 @@ function HarborApp() {
             {
               label: t("overview_stat_bids_placed", "Bids placed"),
               value: bids.length,
-              sub: t("overview_participated_count", "{count} auctions participated", { count: new Set(bids.map((b) => b.lot_id)).size }),
+              sub: t(
+                "overview_participated_count",
+                "{count} auctions participated",
+                { count: new Set(bids.map((b) => b.lot_id)).size },
+              ),
               icon: Layers,
               color: "blue",
             },
@@ -524,89 +567,104 @@ function HarborApp() {
             },
           ];
   return (
-    <AppShell
+    <ApplicationRoutes
       user={user}
-      role={role}
-      page={page}
-      onNavigate={go}
-      isSidebarOpen={sidebar}
-      onOpenSidebar={() => setSidebar(true)}
-      onCloseSidebar={() => setSidebar(false)}
-      liveCount={live.length}
-      hasUnverifiedBuyers={users.some((u) => u.role === "buyer" && !u.verified)}
-      online={online}
-      hasUnreadEvents={events.length > 0}
-      onLogout={logout}
-      onRulesClick={() => go("settings")}
-      demo={demo}
-      rolesLabel={rolesLabel}
-      alerts={
-        <>
-          {!online && (
-            <div className="alert warning">
-              <WifiOff size={18} /> {t("helper_offline_banner", "You’re offline. Sellers can save catch drafts here. Bidding requires a live server connection.")}
-            </div>
+      workspace={
+        <AppShell
+          user={user}
+          role={role}
+          page={page}
+          onNavigate={go}
+          isSidebarOpen={sidebar}
+          onOpenSidebar={() => setSidebar(true)}
+          onCloseSidebar={() => setSidebar(false)}
+          liveCount={live.length}
+          hasUnverifiedBuyers={users.some(
+            (u) => u.role === "buyer" && !u.verified,
           )}
-          {error && (
-            <div className="alert error">
-              <AlertCircle size={18} />
-              <span>{error}</span>
-              <button onClick={refresh}>{t("action_retry", "Retry")}</button>
-            </div>
-          )}
-          {role === "buyer" && !user.verified && (
-            <div className="alert warning">
-              <ShieldCheck size={18} />
-              {t("helper_buyer_unverified", "Your buyer account is awaiting manager verification. You can browse auctions while you wait.")}
-            </div>
-          )}
-        </>
-      }
-      modals={
-        <>
-          {selected && (
-            <LotModal
-              id={selected}
-              user={user}
-              close={() => setSelected(null)}
-              run={run}
-              busy={busy}
-              onEdit={(l) => {
-                setSelected(null);
-                setCatchForm(l);
-              }}
-              toast={toast}
-              online={online}
-            />
-          )}
-          {catchForm && (
-            <CatchForm
-              value={catchForm}
-              user={user}
-              busy={busy}
-              run={run}
-              onClose={() => setCatchForm(null)}
-              onDraft={async (d) => {
-                try {
-                  await draftStore.save(d);
-                  setCatchForm(null);
-                  toast("Catch draft saved securely on this device.");
-                } catch (error) {
-                  toast(`Draft not saved: ${error.message}`, "error");
-                }
-              }}
-              online={online}
-            />
-          )}
-          {toastEl}
-        </>
-      }
-    >
-      {pendingDrafts.length > 0 && (
+          online={online}
+          hasUnreadEvents={events.length > 0}
+          onLogout={logout}
+          onRulesClick={() => go("settings")}
+          demo={demo}
+          rolesLabel={rolesLabel}
+          alerts={
+            <>
+              {!online && (
+                <div className="alert warning">
+                  <WifiOff size={18} />{" "}
+                  {t(
+                    "helper_offline_banner",
+                    "You’re offline. Sellers can save catch drafts here. Bidding requires a live server connection.",
+                  )}
+                </div>
+              )}
+              {error && (
+                <div className="alert error">
+                  <AlertCircle size={18} />
+                  <span>{error}</span>
+                  <button onClick={refresh}>
+                    {t("action_retry", "Retry")}
+                  </button>
+                </div>
+              )}
+              {role === "buyer" && !user.verified && (
+                <div className="alert warning">
+                  <ShieldCheck size={18} />
+                  {t(
+                    "helper_buyer_unverified",
+                    "Your buyer account is awaiting manager verification. You can browse auctions while you wait.",
+                  )}
+                </div>
+              )}
+            </>
+          }
+          modals={
+            <>
+              {selected && (
+                <LotModal
+                  id={selected}
+                  user={user}
+                  close={() => setSelected(null)}
+                  run={run}
+                  busy={busy}
+                  onEdit={(l) => {
+                    setSelected(null);
+                    setCatchForm(l);
+                  }}
+                  toast={toast}
+                  online={online}
+                />
+              )}
+              {catchForm && (
+                <CatchForm
+                  value={catchForm}
+                  user={user}
+                  busy={busy}
+                  run={run}
+                  onClose={() => setCatchForm(null)}
+                  onDraft={async (d) => {
+                    try {
+                      await draftStore.save(d);
+                      setCatchForm(null);
+                      toast("Catch draft saved securely on this device.");
+                    } catch (error) {
+                      toast(`Draft not saved: ${error.message}`, "error");
+                    }
+                  }}
+                  online={online}
+                />
+              )}
+              {toastEl}
+            </>
+          }
+        >
+          {pendingDrafts.length > 0 && (
             <div className="alert">
               <RefreshCw size={18} />
               <span>
-                {pendingDrafts.length} {t("helper_sync_ready", "catch drafts saved on this device.")}
+                {pendingDrafts.length}{" "}
+                {t("helper_sync_ready", "catch drafts saved on this device.")}
               </span>
               <button
                 disabled={busy || draftStore.busy || !online}
@@ -614,7 +672,9 @@ function HarborApp() {
               >
                 {t("action_sync_now", "Sync now")}
               </button>
-              <button onClick={() => go("catches")}>{t("action_view_all", "View drafts")}</button>
+              <button onClick={() => go("catches")}>
+                {t("action_view_all", "View drafts")}
+              </button>
             </div>
           )}
           {page === "overview" && (
@@ -657,11 +717,7 @@ function HarborApp() {
             />
           )}
           {page === "bids" && (
-            <BidsScreen
-              bids={bids}
-              user={user}
-              onSelectLot={setSelected}
-            />
+            <BidsScreen bids={bids} user={user} onSelectLot={setSelected} />
           )}
           {page === "won" && (
             <WonLotsScreen
@@ -680,24 +736,13 @@ function HarborApp() {
             />
           )}
           {page === "users" && (
-            <UsersScreen
-              users={users}
-              run={run}
-              busy={busy}
-            />
+            <UsersScreen users={users} run={run} busy={busy} />
           )}
           {page === "reports" && (
-            <ReportsScreen
-              lots={lots}
-              invoices={invoices}
-            />
+            <ReportsScreen lots={lots} invoices={invoices} />
           )}
           {page === "activity" && (
-            <ActivityScreen
-              events={events}
-              onRefresh={refresh}
-              role={role}
-            />
+            <ActivityScreen events={events} onRefresh={refresh} role={role} />
           )}
           {page === "settings" && (
             <SettingsScreen
@@ -708,9 +753,7 @@ function HarborApp() {
             />
           )}
           <footer className="app-footer">
-            <span>
-              © {new Date().getFullYear()} HarborX
-            </span>
+            <span>© {new Date().getFullYear()} HarborX</span>
             <span>
               <i className={error ? "warning-dot" : ""} />
               {synced
@@ -718,14 +761,18 @@ function HarborApp() {
                 : "Connecting…"}
             </span>
           </footer>
-    </AppShell>
+        </AppShell>
+      }
+    />
   );
 }
 
 export default function App() {
   return (
     <LanguageProvider>
-      <HarborApp />
+      <BrowserRouter>
+        <HarborApp />
+      </BrowserRouter>
     </LanguageProvider>
   );
 }
@@ -787,8 +834,15 @@ function CatchForm({ value, user, onClose, run, busy, onDraft, online }) {
   }
   return (
     <Modal
-      title={edit ? t("catch_edit_title", "Edit catch") : t("catch_register_title", "Register a new catch")}
-      subtitle={t("catch_subtitle", "Enter catch details. Prices are in LKR per kg.")}
+      title={
+        edit
+          ? t("catch_edit_title", "Edit catch")
+          : t("catch_register_title", "Register a new catch")
+      }
+      subtitle={t(
+        "catch_subtitle",
+        "Enter catch details. Prices are in LKR per kg.",
+      )}
       close={onClose}
     >
       <form className="modal-body catch-form" onSubmit={submit}>
@@ -827,24 +881,47 @@ function CatchForm({ value, user, onClose, run, busy, onDraft, online }) {
               onChange={(e) => setSpecies(e.target.value)}
             >
               {[
-                ["Yellowfin Tuna", `${t("species_yellowfin", "Yellowfin Tuna")} — கெளவல் சுறா (Kelawalla)`],
-                ["Skipjack Tuna", `${t("species_skipjack", "Skipjack Tuna")} — பலயா மீன் (Balaya)`],
-                ["Seer Fish", `${t("species_seer", "Seer Fish")} — தோரா / நெய்மீன் (Thora)`],
+                [
+                  "Yellowfin Tuna",
+                  `${t("species_yellowfin", "Yellowfin Tuna")} — கெளவல் சுறா (Kelawalla)`,
+                ],
+                [
+                  "Skipjack Tuna",
+                  `${t("species_skipjack", "Skipjack Tuna")} — பலயா மீன் (Balaya)`,
+                ],
+                [
+                  "Seer Fish",
+                  `${t("species_seer", "Seer Fish")} — தோரா / நெய்மீன் (Thora)`,
+                ],
                 ["Prawns", `${t("species_prawns", "Prawns")} — இறால் (Isso)`],
-                ["Sardine", `${t("species_sardine", "Sardine")} — சாலை மீன் (Salaya)`],
-                ["Mackerel", `${t("species_mackerel", "Mackerel")} — கானாங்கெளுத்தி (Kumbalawa)`],
+                [
+                  "Sardine",
+                  `${t("species_sardine", "Sardine")} — சாலை மீன் (Salaya)`,
+                ],
+                [
+                  "Mackerel",
+                  `${t("species_mackerel", "Mackerel")} — கானாங்கெளுத்தி (Kumbalawa)`,
+                ],
                 ["Other", `${t("species_other", "Other fish")} — பிற மீன்கள்`],
               ].map(([val, label]) => (
-                <option key={val} value={val}>{label}</option>
+                <option key={val} value={val}>
+                  {label}
+                </option>
               ))}
             </select>
           </label>
           <label>
             {t("catch_field_grade", "Quality grade")}
             <select name="grade" defaultValue={value.grade || "A"}>
-              <option value="A">{t("catch_grade_a", "Grade A — Export / Premium Quality")}</option>
-              <option value="B">{t("catch_grade_b", "Grade B — Fresh Local Market")}</option>
-              <option value="C">{t("catch_grade_c", "Grade C — Processing / Drying")}</option>
+              <option value="A">
+                {t("catch_grade_a", "Grade A — Export / Premium Quality")}
+              </option>
+              <option value="B">
+                {t("catch_grade_b", "Grade B — Fresh Local Market")}
+              </option>
+              <option value="C">
+                {t("catch_grade_c", "Grade C — Processing / Drying")}
+              </option>
             </select>
           </label>
           <label>
@@ -899,15 +976,26 @@ function CatchForm({ value, user, onClose, run, busy, onDraft, online }) {
             {t("catch_field_harbor", "Arrival harbor")}
             <select name="harbor" defaultValue={value.harbor || "Dikkowita"}>
               {[
-                ["Dikkowita", `${t("harbor_dikkowita", "Dikkowita")} — திக்கோவிற்ற`],
+                [
+                  "Dikkowita",
+                  `${t("harbor_dikkowita", "Dikkowita")} — திக்கோவிற்ற`,
+                ],
                 ["Negombo", `${t("harbor_negombo", "Negombo")} — நீர்கொழும்பு`],
                 ["Galle", `${t("harbor_galle", "Galle")} — காலி`],
                 ["Mirissa", `${t("harbor_mirissa", "Mirissa")} — மிரிஸ்ஸ`],
-                ["Trincomalee", `${t("harbor_trincomalee", "Trincomalee")} — திருகோணமலை`],
+                [
+                  "Trincomalee",
+                  `${t("harbor_trincomalee", "Trincomalee")} — திருகோணமலை`,
+                ],
                 ["Beruwala", `${t("harbor_beruwala", "Beruwala")} — பேருவளை`],
-                ["Other", `${t("harbor_other", "Other harbor")} — பிற துறைமுகம்`],
+                [
+                  "Other",
+                  `${t("harbor_other", "Other harbor")} — பிற துறைமுகம்`,
+                ],
               ].map(([val, label]) => (
-                <option key={val} value={val}>{label}</option>
+                <option key={val} value={val}>
+                  {label}
+                </option>
               ))}
             </select>
           </label>
@@ -939,13 +1027,19 @@ function CatchForm({ value, user, onClose, run, busy, onDraft, online }) {
             rows={3}
             maxLength={1000}
             defaultValue={value.notes}
-            placeholder={t("catch_notes_placeholder", "Storage, catch condition, or collection details…")}
+            placeholder={t(
+              "catch_notes_placeholder",
+              "Storage, catch condition, or collection details…",
+            )}
           />
         </label>
         <div className="alert">
           <ShieldCheck size={18} />
           <span>
-            {t("catch_manager_review_notice", "The manager reviews your catch before publishing. You can edit or withdraw while it awaits review.")}
+            {t(
+              "catch_manager_review_notice",
+              "The manager reviews your catch before publishing. You can edit or withdraw while it awaits review.",
+            )}
           </span>
         </div>
         <div className="form-footer">
@@ -1046,9 +1140,18 @@ function LotModal({ id, user, close, run, busy, onEdit, toast, online }) {
       : 0;
   return (
     <Modal
-      title={l?.species ? t("species_" + l.species.toLowerCase().replace(/\s+/g, ""), l.species) : t("lot_modal_tab_details", "Auction details")}
+      title={
+        l?.species
+          ? t(
+              "species_" + l.species.toLowerCase().replace(/\s+/g, ""),
+              l.species,
+            )
+          : t("lot_modal_tab_details", "Auction details")
+      }
       subtitle={
-        l ? `${l.code} · ${t("harbor_suffix", "{harbor} harbor").replace("{harbor}", t("harbor_" + (l.harbor || "").toLowerCase(), l.harbor))}` : t("action_please_wait", "Loading the latest auction…")
+        l
+          ? `${l.code} · ${t("harbor_suffix", "{harbor} harbor").replace("{harbor}", t("harbor_" + (l.harbor || "").toLowerCase(), l.harbor))}`
+          : t("action_please_wait", "Loading the latest auction…")
       }
       close={close}
       wide
@@ -1067,34 +1170,52 @@ function LotModal({ id, user, close, run, busy, onEdit, toast, online }) {
         <>
           <div className="detail-top">
             <div className="detail-art">
-              <span className="catch-placeholder detail-placeholder" aria-label={t("catch_no_photo", "No catch photo supplied")}>
+              <span
+                className="catch-placeholder detail-placeholder"
+                aria-label={t("catch_no_photo", "No catch photo supplied")}
+              >
                 <Fish size={52} strokeWidth={1.25} aria-hidden="true" />
                 <small>{t("catch_no_photo", "No catch photo supplied")}</small>
               </span>
               <div>
                 <Badge status={active ? "live" : l.status} />
                 <span>
-                  {t("lot_card_grade", "Grade {grade}", { grade: l.grade })} · {money(l.weight)} kg
+                  {t("lot_card_grade", "Grade {grade}", { grade: l.grade })} ·{" "}
+                  {money(l.weight)} kg
                 </span>
               </div>
             </div>
             <div className="detail-price">
               <span className="eyebrow">
-                {l.highest_bid ? t("lot_modal_highest_bid", "CURRENT HIGHEST BID") : t("lot_modal_base_price", "BASE PRICE")}
+                {l.highest_bid
+                  ? t("lot_modal_highest_bid", "CURRENT HIGHEST BID")
+                  : t("lot_modal_base_price", "BASE PRICE")}
               </span>
               <h2>
                 LKR {money(l.highest_bid || l.base_price)}
                 <small>{t("lot_card_per_kg", "/ kg")}</small>
               </h2>
-              <p>{t("lot_modal_min_increment", "Minimum increment: LKR {increment} / kg", { increment: money(l.min_increment) })}</p>
+              <p>
+                {t(
+                  "lot_modal_min_increment",
+                  "Minimum increment: LKR {increment} / kg",
+                  { increment: money(l.min_increment) },
+                )}
+              </p>
               <div className="detail-chips">
                 <span>
                   <Gavel size={15} />
-                  {t("lot_modal_accepted_bids", "{count} accepted bids", { count: l.bid_count })}
+                  {t("lot_modal_accepted_bids", "{count} accepted bids", {
+                    count: l.bid_count,
+                  })}
                 </span>
                 <span>
                   <Layers size={15} />
-                  {l.round ? t("lot_modal_round", "Round {round} of 3", { round: l.round }) : t("lot_modal_not_started", "Not started")}
+                  {l.round
+                    ? t("lot_modal_round", "Round {round} of 3", {
+                        round: l.round,
+                      })
+                    : t("lot_modal_not_started", "Not started")}
                 </span>
               </div>
               {l.status === "live" && (
@@ -1132,18 +1253,25 @@ function LotModal({ id, user, close, run, busy, onEdit, toast, online }) {
                       required
                       value={amount}
                       onChange={(e) => setAmount(e.target.value)}
-                      placeholder={t("lot_modal_min_placeholder", "Minimum {min}", { min: money(minimum) })}
+                      placeholder={t(
+                        "lot_modal_min_placeholder",
+                        "Minimum {min}",
+                        { min: money(minimum) },
+                      )}
                     />
                   </label>
                   <div className="quick-bids" aria-label="Quick bid increments">
-                    <span className="quick-bid-label">{t("lot_modal_quick_raise", "Quick raise:")}</span>
+                    <span className="quick-bid-label">
+                      {t("lot_modal_quick_raise", "Quick raise:")}
+                    </span>
                     {[50, 100, 250, 500].map((step) => (
                       <button
                         key={step}
                         type="button"
                         className="quick-bid-pill"
                         onClick={() => {
-                          const currentBase = Number(amount) > minimum ? Number(amount) : minimum;
+                          const currentBase =
+                            Number(amount) > minimum ? Number(amount) : minimum;
                           setAmount(String(currentBase + step));
                         }}
                       >
@@ -1155,22 +1283,40 @@ function LotModal({ id, user, close, run, busy, onEdit, toast, online }) {
                     <div className="est-total-calc">
                       <small>{t("lot_modal_calc_label", "Calculation")}</small>
                       <span>
-                        {money(l.weight)} kg × LKR {money(Number(amount) || minimum)} / kg
+                        {money(l.weight)} kg × LKR{" "}
+                        {money(Number(amount) || minimum)} / kg
                       </span>
                     </div>
                     <div className="est-total-res">
-                      <small>{t("lot_modal_est_total_label", "Estimated total")}</small>
-                      <strong>LKR {money((Number(amount) || minimum) * Number(l.weight))}</strong>
+                      <small>
+                        {t("lot_modal_est_total_label", "Estimated total")}
+                      </small>
+                      <strong>
+                        LKR{" "}
+                        {money((Number(amount) || minimum) * Number(l.weight))}
+                      </strong>
                     </div>
                   </div>
                   <small className="bid-commit-note">
-                    {t("lot_modal_bid_commit_note", "Accepted bids are final and cannot be withdrawn.")}
+                    {t(
+                      "lot_modal_bid_commit_note",
+                      "Accepted bids are final and cannot be withdrawn.",
+                    )}
                   </small>
                   {!user.verified && (
                     <div className="alert warning" style={{ margin: "8px 0" }}>
                       <ShieldCheck size={18} />
                       <span>
-                        <strong>{t("lot_modal_awaiting_verification_title", "Awaiting Verification:")}</strong> {t("lot_modal_awaiting_verification_desc", "The harbor manager reviews all new buyers before bidding is unlocked.")}
+                        <strong>
+                          {t(
+                            "lot_modal_awaiting_verification_title",
+                            "Awaiting Verification:",
+                          )}
+                        </strong>{" "}
+                        {t(
+                          "lot_modal_awaiting_verification_desc",
+                          "The harbor manager reviews all new buyers before bidding is unlocked.",
+                        )}
                       </span>
                     </div>
                   )}
@@ -1183,7 +1329,10 @@ function LotModal({ id, user, close, run, busy, onEdit, toast, online }) {
                       ? t("action_submitting", "Submitting…")
                       : user.verified
                         ? t("action_place_bid", "Place bid")
-                        : t("lot_modal_verification_required", "Verification required")}
+                        : t(
+                            "lot_modal_verification_required",
+                            "Verification required",
+                          )}
                   </button>
                 </form>
               )}
@@ -1194,9 +1343,15 @@ function LotModal({ id, user, close, run, busy, onEdit, toast, online }) {
                     <strong>
                       {l.winner_id === user.id
                         ? t("lot_modal_you_won", "You won this auction")
-                        : t("lot_modal_won_by", "Won by {winner}", { winner: l.winner_name })}
+                        : t("lot_modal_won_by", "Won by {winner}", {
+                            winner: l.winner_name,
+                          })}
                     </strong>
-                    <span>{t("lot_modal_total_sale", "Total sale: LKR {total}", { total: money(l.final_price) })}</span>
+                    <span>
+                      {t("lot_modal_total_sale", "Total sale: LKR {total}", {
+                        total: money(l.final_price),
+                      })}
+                    </span>
                   </div>
                 </div>
               )}
@@ -1212,12 +1367,13 @@ function LotModal({ id, user, close, run, busy, onEdit, toast, online }) {
                 ? ["payments"]
                 : []),
             ].map((tabKey) => {
-              const tabName = {
-                details: t("lot_modal_tab_details", "Details"),
-                bids: t("lot_modal_tab_bids", "Bids"),
-                timeline: t("lot_modal_tab_timeline", "Timeline"),
-                payments: t("lot_modal_tab_payments", "Payments"),
-              }[tabKey] || tabKey;
+              const tabName =
+                {
+                  details: t("lot_modal_tab_details", "Details"),
+                  bids: t("lot_modal_tab_bids", "Bids"),
+                  timeline: t("lot_modal_tab_timeline", "Timeline"),
+                  payments: t("lot_modal_tab_payments", "Payments"),
+                }[tabKey] || tabKey;
               return (
                 <button
                   key={tabKey}
@@ -1237,19 +1393,34 @@ function LotModal({ id, user, close, run, busy, onEdit, toast, online }) {
                   {[
                     [t("lot_modal_seller", "Seller"), l.seller_name],
                     [t("lot_modal_boat", "Boat"), l.boat_name],
-                    [t("lot_modal_harbor", "Harbor"), t("harbor_" + (l.harbor || "").toLowerCase(), l.harbor)],
-                    [t("lot_modal_est_arrival", "Estimated arrival"), date(l.arrival_at)],
-                    [t("lot_modal_declared_weight", "Declared weight"), `${money(l.weight)} kg`],
+                    [
+                      t("lot_modal_harbor", "Harbor"),
+                      t("harbor_" + (l.harbor || "").toLowerCase(), l.harbor),
+                    ],
+                    [
+                      t("lot_modal_est_arrival", "Estimated arrival"),
+                      date(l.arrival_at),
+                    ],
+                    [
+                      t("lot_modal_declared_weight", "Declared weight"),
+                      `${money(l.weight)} kg`,
+                    ],
                     [
                       t("lot_modal_inspected_weight", "Inspected weight"),
                       l.arrived
                         ? `${money(l.actual_weight)} kg`
                         : t("lot_modal_awaiting_arrival", "Awaiting arrival"),
                     ],
-                    [t("lot_modal_base_price", "Base price"), `LKR ${money(l.base_price)} / kg`],
+                    [
+                      t("lot_modal_base_price", "Base price"),
+                      `LKR ${money(l.base_price)} / kg`,
+                    ],
                     [
                       t("lot_modal_bid_visibility", "Bid visibility"),
-                      t("lot_modal_bid_visibility_desc", "Open amounts · buyer identities private"),
+                      t(
+                        "lot_modal_bid_visibility_desc",
+                        "Open amounts · buyer identities private",
+                      ),
                     ],
                   ].map(([name, value]) => (
                     <div key={name}>
@@ -1266,7 +1437,11 @@ function LotModal({ id, user, close, run, busy, onEdit, toast, online }) {
                 )}
                 {l.cancel_reason && (
                   <div className="alert warning">
-                    {t("lot_modal_cancellation_reason", "Cancellation reason: {reason}", { reason: l.cancel_reason })}
+                    {t(
+                      "lot_modal_cancellation_reason",
+                      "Cancellation reason: {reason}",
+                      { reason: l.cancel_reason },
+                    )}
                   </div>
                 )}
                 {owner && l.status === "pending" && (
@@ -1287,8 +1462,18 @@ function LotModal({ id, user, close, run, busy, onEdit, toast, online }) {
                     <section className="manager-panel">
                       <div className="section-heading">
                         <div>
-                          <h3>{t("lot_modal_manager_controls", "Auction manager controls")}</h3>
-                          <p>{t("lot_modal_audit_trail_notice", "All changes are recorded in the audit trail.")}</p>
+                          <h3>
+                            {t(
+                              "lot_modal_manager_controls",
+                              "Auction manager controls",
+                            )}
+                          </h3>
+                          <p>
+                            {t(
+                              "lot_modal_audit_trail_notice",
+                              "All changes are recorded in the audit trail.",
+                            )}
+                          </p>
                         </div>
                         <ShieldCheck size={20} />
                       </div>
@@ -1332,7 +1517,9 @@ function LotModal({ id, user, close, run, busy, onEdit, toast, online }) {
                               }
                             >
                               <Gavel size={15} />
-                              {t("action_start_round", "Start round {round}", { round: l.round + 1 })}
+                              {t("action_start_round", "Start round {round}", {
+                                round: l.round + 1,
+                              })}
                             </button>
                           </div>
                         )}
@@ -1379,7 +1566,10 @@ function LotModal({ id, user, close, run, busy, onEdit, toast, online }) {
                       </div>
                       {active && (
                         <p className="muted small-text">
-                          {t("lot_modal_manager_end_notice", "End the round before finalizing the auction. Confirm arrival and the catch weight first.")}
+                          {t(
+                            "lot_modal_manager_end_notice",
+                            "End the round before finalizing the auction. Confirm arrival and the catch weight first.",
+                          )}
                         </p>
                       )}
                     </section>
@@ -1402,7 +1592,11 @@ function LotModal({ id, user, close, run, busy, onEdit, toast, online }) {
                       {data.bids.map((b) => (
                         <tr key={b.id}>
                           <td>
-                            <strong>{b.is_mine ? t("lot_modal_you", "You") : b.buyer_name}</strong>
+                            <strong>
+                              {b.is_mine
+                                ? t("lot_modal_you", "You")
+                                : b.buyer_name}
+                            </strong>
                           </td>
                           <td>LKR {money(b.amount)}</td>
                           <td>{b.round}</td>
@@ -1416,7 +1610,10 @@ function LotModal({ id, user, close, run, busy, onEdit, toast, online }) {
                 <Empty
                   icon={Gavel}
                   title={t("lot_modal_no_bids_title", "No bids yet")}
-                  text={t("lot_modal_no_bids_text", "The first valid bid must meet the base price.")}
+                  text={t(
+                    "lot_modal_no_bids_text",
+                    "The first valid bid must meet the base price.",
+                  )}
                 />
               ))}
             {tab === "timeline" && <ActivityList events={data.events} />}
@@ -1428,17 +1625,27 @@ function LotModal({ id, user, close, run, busy, onEdit, toast, online }) {
                     <strong>LKR {money(l.final_price)}</strong>
                   </div>
                   <div>
-                    <small>{t("lot_modal_commission", "Commission ({rate}%)", { rate: l.commission_rate })}</small>
+                    <small>
+                      {t("lot_modal_commission", "Commission ({rate}%)", {
+                        rate: l.commission_rate,
+                      })}
+                    </small>
                     <strong>LKR {money(l.commission)}</strong>
                   </div>
                   <div>
-                    <small>{t("lot_modal_seller_proceeds", "Seller proceeds")}</small>
+                    <small>
+                      {t("lot_modal_seller_proceeds", "Seller proceeds")}
+                    </small>
                     <strong>
                       LKR {money(Number(l.final_price) - Number(l.commission))}
                     </strong>
                   </div>
                   <div>
-                    <small>{t("lot_modal_balance_due", "Balance · due {date}", { date: date(l.payment_due_at) })}</small>
+                    <small>
+                      {t("lot_modal_balance_due", "Balance · due {date}", {
+                        date: date(l.payment_due_at),
+                      })}
+                    </small>
                     <strong>LKR {money(l.balance)}</strong>
                     <Badge status={l.payment_status} />
                   </div>
@@ -1463,9 +1670,17 @@ function LotModal({ id, user, close, run, busy, onEdit, toast, online }) {
                         form.reset();
                     }}
                   >
-                    <h3>{t("lot_modal_record_payment_title", "Record a received payment")}</h3>
+                    <h3>
+                      {t(
+                        "lot_modal_record_payment_title",
+                        "Record a received payment",
+                      )}
+                    </h3>
                     <p>
-                      {t("lot_modal_record_payment_desc", "Confirm receipt before recording. This records a payment; it does not transfer money.")}
+                      {t(
+                        "lot_modal_record_payment_desc",
+                        "Confirm receipt before recording. This records a payment; it does not transfer money.",
+                      )}
                     </p>
                     <div className="form-grid">
                       <label>
@@ -1481,7 +1696,10 @@ function LotModal({ id, user, close, run, busy, onEdit, toast, online }) {
                         />
                       </label>
                       <label>
-                        {t("lot_modal_receipt_label", "Receipt / bank reference")}
+                        {t(
+                          "lot_modal_receipt_label",
+                          "Receipt / bank reference",
+                        )}
                         <input
                           name="reference"
                           required
@@ -1504,7 +1722,9 @@ function LotModal({ id, user, close, run, busy, onEdit, toast, online }) {
                         <tr>
                           <th>{t("lot_modal_th_reference", "Reference")}</th>
                           <th>{t("lot_modal_th_amount", "Amount (LKR)")}</th>
-                          <th>{t("lot_modal_th_recorded_by", "Recorded by")}</th>
+                          <th>
+                            {t("lot_modal_th_recorded_by", "Recorded by")}
+                          </th>
                           <th>{t("lot_modal_th_date", "Date")}</th>
                         </tr>
                       </thead>
@@ -1521,7 +1741,12 @@ function LotModal({ id, user, close, run, busy, onEdit, toast, online }) {
                     </table>
                   </div>
                 ) : (
-                  <p className="muted">{t("lot_modal_no_payments", "No payment receipts recorded yet.")}</p>
+                  <p className="muted">
+                    {t(
+                      "lot_modal_no_payments",
+                      "No payment receipts recorded yet.",
+                    )}
+                  </p>
                 )}
               </>
             )}
@@ -1553,10 +1778,19 @@ function LotModal({ id, user, close, run, busy, onEdit, toast, online }) {
                   <h3>
                     {
                       {
-                        arrival: t("lot_modal_action_arrival", "Confirm catch arrival"),
+                        arrival: t(
+                          "lot_modal_action_arrival",
+                          "Confirm catch arrival",
+                        ),
                         cancel: t("lot_modal_action_cancel", "Cancel this lot"),
-                        "end-round": t("lot_modal_action_end_round", "End the current round?"),
-                        close: t("lot_modal_action_close", "Finalize this auction?"),
+                        "end-round": t(
+                          "lot_modal_action_end_round",
+                          "End the current round?",
+                        ),
+                        close: t(
+                          "lot_modal_action_close",
+                          "Finalize this auction?",
+                        ),
                       }[action]
                     }
                   </h3>
@@ -1572,7 +1806,10 @@ function LotModal({ id, user, close, run, busy, onEdit, toast, online }) {
                 {action === "arrival" && (
                   <>
                     <p>
-                      {t("lot_modal_arrival_desc", "Inspect the catch at the harbor. A weight different from the advertised catch requires cancellation and relisting.")}
+                      {t(
+                        "lot_modal_arrival_desc",
+                        "Inspect the catch at the harbor. A weight different from the advertised catch requires cancellation and relisting.",
+                      )}
                     </p>
                     <label>
                       {t("lot_modal_inspected_weight", "Inspected weight")} (kg)
@@ -1590,38 +1827,58 @@ function LotModal({ id, user, close, run, busy, onEdit, toast, online }) {
                 )}
                 {action === "cancel" && (
                   <label>
-                    {t("lot_modal_cancel_reason_label", "Reason for cancellation")}
+                    {t(
+                      "lot_modal_cancel_reason_label",
+                      "Reason for cancellation",
+                    )}
                     <textarea
                       required
                       minLength={5}
                       maxLength={500}
                       value={reason}
                       onChange={(e) => setReason(e.target.value)}
-                      placeholder={t("lot_modal_cancel_placeholder", "Explain withdrawal, weight mismatch, or non-arrival…")}
+                      placeholder={t(
+                        "lot_modal_cancel_placeholder",
+                        "Explain withdrawal, weight mismatch, or non-arrival…",
+                      )}
                     />
                   </label>
                 )}
                 {action === "close" && (
                   <p>
                     {l.highest_bid
-                      ? t("lot_modal_close_desc_bids", "Award this lot to {winner} at LKR {price}/kg. The sale total will be LKR {total}.", {
-                          winner: l.winner_name || "the highest valid bidder",
-                          price: money(l.highest_bid),
-                          total: money(Number(l.highest_bid) * Number(l.actual_weight)),
-                        })
-                      : t("lot_modal_close_desc_nobids", "This lot has no accepted bids. It will be marked unsold.")}
+                      ? t(
+                          "lot_modal_close_desc_bids",
+                          "Award this lot to {winner} at LKR {price}/kg. The sale total will be LKR {total}.",
+                          {
+                            winner: l.winner_name || "the highest valid bidder",
+                            price: money(l.highest_bid),
+                            total: money(
+                              Number(l.highest_bid) * Number(l.actual_weight),
+                            ),
+                          },
+                        )
+                      : t(
+                          "lot_modal_close_desc_nobids",
+                          "This lot has no accepted bids. It will be marked unsold.",
+                        )}
                   </p>
                 )}
                 {action === "end-round" && (
                   <p>
-                    {t("lot_modal_end_round_desc", "New bids will stop immediately. You can then verify arrival, finalize, or start the next available round.")}
+                    {t(
+                      "lot_modal_end_round_desc",
+                      "New bids will stop immediately. You can then verify arrival, finalize, or start the next available round.",
+                    )}
                   </p>
                 )}
                 <button
                   className={`btn ${action === "cancel" ? "danger-solid" : "primary"}`}
                   disabled={busy}
                 >
-                  {busy ? t("action_saving", "Saving…") : t("action_confirm", "Confirm")}
+                  {busy
+                    ? t("action_saving", "Saving…")
+                    : t("action_confirm", "Confirm")}
                   <Check size={16} />
                 </button>
               </form>
