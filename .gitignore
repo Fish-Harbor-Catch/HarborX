@@ -171,3 +171,4 @@ data/
 *.suo
 *.sw?
 /prototypes/harborx-public-website/
+artifacts/
