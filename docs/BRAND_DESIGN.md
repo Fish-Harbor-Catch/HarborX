@@ -30,11 +30,22 @@ no network fonts or dependencies are added. The selected Tamil/Sinhala face
 therefore depends on the device's installed fonts. Translation content and the
 language provider are unchanged.
 
-The shared `Logo` uses the homepage's original H-and-wave SVG and tagline. Its
-existing light, collapsed and accessibility interfaces remain intact; the public
-homepage keeps its existing brand link. Typography, border radius and color
-changes do not alter the split auth layout, field order, dashboard structure,
-responsive breakpoints or navigation.
+The shared `Logo` imports the official artwork unchanged from `frontend/src/`:
+`harborx-logo.svg` (556×168) for light surfaces, `harborx-logo-dark-bg.svg`
+(556×168) for the footer and expanded dark sidebars, and `harborx-icon.svg`
+(96×96) for collapsed/compact sidebars. The existing public brand links keep their
+navigation and accessible names. A single image inside `<picture>` selects the
+compact sidebar artwork at the existing tablet breakpoint; intrinsic dimensions
+and `object-fit: contain` preserve the original proportions. No form, dashboard,
+navigation, translation or animation behavior changes with the logo selection.
+
+Run `npm run icons -w frontend` after changing the official icon. The existing
+generator derives the public favicon, 192/512 px standard PNG icons, the padded
+512 px maskable PNG and the 180 px Apple touch icon directly from that SVG. The
+favicon is a byte-identical deployment copy at its established `/favicon.svg`
+URL; the source remains authoritative. Wordmarks use Vite asset imports without
+additional source copies. Manifest identity, icon URLs, caching policy, update
+activation and offline draft storage are unchanged.
 
 ## Motion preservation
 
@@ -56,6 +67,9 @@ Screenshots use reduced motion to hold the same first photograph; animated
 behavior is separately verified by the unchanged browser animation tests.
 Screenshots use seeded demonstration accounts against the disposable in-memory
 test server, without reading or changing the developer's database.
+These archived comparisons predate the official-logo integration; current logo
+variants, proportions, sidebar modes and install assets are checked by
+`frontend/tests/browser/branding.spec.js`.
 
 `artifacts/brand-consistency/animation-preservation.json` records before/after
 hashes of protected files and CSS motion declarations. The previous uncommitted
